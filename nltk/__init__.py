@@ -198,7 +198,3 @@ from nltk import data, featstruct, grammar, help, inference, metrics
 from nltk import misc, parse, probability, sem, stem, wsd
 from nltk import tag, tbl, text, tokenize, translate, tree, treetransforms, util
 
-
-# FIXME:  override any accidentally imported demo, see https://github.com/nltk/nltk/issues/2116
-def demo():
-    print("To run the demo code for a module, type nltk.module.demo()")
