@@ -9,7 +9,6 @@
 import re
 
 from nltk.tree import Tree
-from nltk.chunk.api import ChunkParserI
 
 ##//////////////////////////////////////////////////////
 ##  ChunkString
@@ -963,7 +962,7 @@ def tag_pattern2re_pattern(tag_pattern):
 ##//////////////////////////////////////////////////////
 
 
-class RegexpChunkParser(ChunkParserI):
+class RegexpChunkParser:
     """
     A regular expression based chunk parser.  ``RegexpChunkParser`` uses a
     sequence of "rules" to find chunks of a single type within a
@@ -1129,7 +1128,7 @@ class RegexpChunkParser(ChunkParserI):
 ##//////////////////////////////////////////////////////
 
 
-class RegexpParser(ChunkParserI):
+class RegexpParser:
     """
     A grammar based chunk parser.  ``chunk.RegexpParser`` uses a set of
     regular expression patterns to specify the behavior of the parser.

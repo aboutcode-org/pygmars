@@ -29,8 +29,7 @@ chunk structure's ``leaves()`` method.
 
 This module defines ``ChunkParserI``, a standard interface for
 chunking texts; and ``RegexpChunkParser``, a regular-expression based
-implementation of that interface. It also defines ``ChunkScore``, a
-utility class for scoring chunk parsers.
+implementation of that interface. 
 
 RegexpChunkParser
 =================
@@ -152,48 +151,4 @@ zero-length assertions).
      pattern is valid.
 """
 
-from nltk.data import load
-
-from nltk.chunk.api import ChunkParserI
-from nltk.chunk.util import (
-    ChunkScore,
-    accuracy,
-    tagstr2tree,
-    conllstr2tree,
-    conlltags2tree,
-    tree2conlltags,
-    tree2conllstr,
-    tree2conlltags,
-    ieerstr2tree,
-)
 from nltk.chunk.regexp import RegexpChunkParser, RegexpParser
-
-# Standard treebank POS tagger
-_BINARY_NE_CHUNKER = "chunkers/maxent_ne_chunker/english_ace_binary.pickle"
-_MULTICLASS_NE_CHUNKER = "chunkers/maxent_ne_chunker/english_ace_multiclass.pickle"
-
-
-def ne_chunk(tagged_tokens, binary=False):
-    """
-    Use NLTK's currently recommended named entity chunker to
-    chunk the given list of tagged tokens.
-    """
-    if binary:
-        chunker_pickle = _BINARY_NE_CHUNKER
-    else:
-        chunker_pickle = _MULTICLASS_NE_CHUNKER
-    chunker = load(chunker_pickle)
-    return chunker.parse(tagged_tokens)
-
-
-def ne_chunk_sents(tagged_sentences, binary=False):
-    """
-    Use NLTK's currently recommended named entity chunker to chunk the
-    given list of tagged sentences, each consisting of a list of tagged tokens.
-    """
-    if binary:
-        chunker_pickle = _BINARY_NE_CHUNKER
-    else:
-        chunker_pickle = _MULTICLASS_NE_CHUNKER
-    chunker = load(chunker_pickle)
-    return chunker.parse_sents(tagged_sentences)

@@ -15,14 +15,11 @@ syntax trees and morphological trees.
 """
 
 import re
-import sys
 from abc import ABCMeta, abstractmethod
 
 
-from nltk.grammar import Production, Nonterminal
-from nltk.probability import ProbabilisticMixIn
-from nltk.util import slice_bounds
-from nltk.internals import raise_unorderable_types
+#from nltk.grammar import Nonterminal
+from nltk.internals import slice_bounds
 
 # TODO: add LabelledTree (can be used for dependency trees)
 
@@ -358,31 +355,6 @@ class Tree(list):
                 for subtree in child.subtrees(filter):
                     yield subtree
 
-    def productions(self):
-        """
-        Generate the productions that correspond to the non-terminal nodes of the tree.
-        For each subtree of the form (P: C1 C2 ... Cn) this produces a production of the
-        form P -> C1 C2 ... Cn.
-
-            >>> t = Tree.fromstring("(S (NP (D the) (N dog)) (VP (V chased) (NP (D the) (N cat))))")
-            >>> t.productions()
-            [S -> NP VP, NP -> D N, D -> 'the', N -> 'dog', VP -> V NP, V -> 'chased',
-            NP -> D N, D -> 'the', N -> 'cat']
-
-        :rtype: list(Production)
-        """
-
-        if not isinstance(self._label, str):
-            raise TypeError(
-                "Productions can only be generated from trees having node labels that are strings"
-            )
-
-        prods = [Production(Nonterminal(self._label), _child_names(self))]
-        for child in self:
-            if isinstance(child, Tree):
-                prods += child.productions()
-        return prods
-
     def pos(self):
         """
         Return a sequence of pos-tagged words extracted from the tree.
@@ -446,93 +418,6 @@ class Tree(list):
             if i == len(end_treepos) or start_treepos[i] != end_treepos[i]:
                 return start_treepos[:i]
         return start_treepos
-
-    # ////////////////////////////////////////////////////////////
-    # Transforms
-    # ////////////////////////////////////////////////////////////
-
-    def chomsky_normal_form(
-        self,
-        factor="right",
-        horzMarkov=None,
-        vertMarkov=0,
-        childChar="|",
-        parentChar="^",
-    ):
-        """
-        This method can modify a tree in three ways:
-
-          1. Convert a tree into its Chomsky Normal Form (CNF)
-             equivalent -- Every subtree has either two non-terminals
-             or one terminal as its children.  This process requires
-             the creation of more"artificial" non-terminal nodes.
-          2. Markov (vertical) smoothing of children in new artificial
-             nodes
-          3. Horizontal (parent) annotation of nodes
-
-        :param factor: Right or left factoring method (default = "right")
-        :type  factor: str = [left|right]
-        :param horzMarkov: Markov order for sibling smoothing in artificial nodes (None (default) = include all siblings)
-        :type  horzMarkov: int | None
-        :param vertMarkov: Markov order for parent smoothing (0 (default) = no vertical annotation)
-        :type  vertMarkov: int | None
-        :param childChar: A string used in construction of the artificial nodes, separating the head of the
-                          original subtree from the child nodes that have yet to be expanded (default = "|")
-        :type  childChar: str
-        :param parentChar: A string used to separate the node representation from its vertical annotation
-        :type  parentChar: str
-        """
-        from nltk.treetransforms import chomsky_normal_form
-
-        chomsky_normal_form(self, factor, horzMarkov, vertMarkov, childChar, parentChar)
-
-    def un_chomsky_normal_form(
-        self, expandUnary=True, childChar="|", parentChar="^", unaryChar="+"
-    ):
-        """
-        This method modifies the tree in three ways:
-
-          1. Transforms a tree in Chomsky Normal Form back to its
-             original structure (branching greater than two)
-          2. Removes any parent annotation (if it exists)
-          3. (optional) expands unary subtrees (if previously
-             collapsed with collapseUnary(...) )
-
-        :param expandUnary: Flag to expand unary or not (default = True)
-        :type  expandUnary: bool
-        :param childChar: A string separating the head node from its children in an artificial node (default = "|")
-        :type  childChar: str
-        :param parentChar: A sting separating the node label from its parent annotation (default = "^")
-        :type  parentChar: str
-        :param unaryChar: A string joining two non-terminals in a unary production (default = "+")
-        :type  unaryChar: str
-        """
-        from nltk.treetransforms import un_chomsky_normal_form
-
-        un_chomsky_normal_form(self, expandUnary, childChar, parentChar, unaryChar)
-
-    def collapse_unary(self, collapsePOS=False, collapseRoot=False, joinChar="+"):
-        """
-        Collapse subtrees with a single child (ie. unary productions)
-        into a new non-terminal (Tree node) joined by 'joinChar'.
-        This is useful when working with algorithms that do not allow
-        unary productions, and completely removing the unary productions
-        would require loss of useful information.  The Tree is modified
-        directly (since it is passed by reference) and no value is returned.
-
-        :param collapsePOS: 'False' (default) will not collapse the parent of leaf nodes (ie.
-                            Part-of-Speech tags) since they are always unary productions
-        :type  collapsePOS: bool
-        :param collapseRoot: 'False' (default) will not modify the root production
-                             if it is unary.  For the Penn WSJ treebank corpus, this corresponds
-                             to the TOP -> productions.
-        :type collapseRoot: bool
-        :param joinChar: A string used to connect collapsed node values (default = "+")
-        :type  joinChar: str
-        """
-        from nltk.treetransforms import collapse_unary
-
-        collapse_unary(self, collapsePOS, collapseRoot, joinChar)
 
     # ////////////////////////////////////////////////////////////
     # Convert, copy
@@ -741,24 +626,6 @@ class Tree(list):
     # Visualization & String Representation
     # ////////////////////////////////////////////////////////////
 
-    def draw(self):
-        """
-        Open a new window containing a graphical diagram of this tree.
-        """
-        from nltk.draw.tree import draw_trees
-
-        draw_trees(self)
-
-    def pretty_print(self, sentence=None, highlight=(), stream=None, **kwargs):
-        """
-        Pretty-print this tree as ASCII or Unicode art.
-        For explanation of the arguments, see the documentation for
-        `nltk.treeprettyprinter.TreePrettyPrinter`.
-        """
-        from nltk.treeprettyprinter import TreePrettyPrinter
-
-        print(TreePrettyPrinter(self, sentence, highlight).text(**kwargs), file=stream)
-
     def __repr__(self):
         childstr = ", ".join(repr(c) for c in self)
         return "%s(%s, [%s])" % (
@@ -766,61 +633,6 @@ class Tree(list):
             repr(self._label),
             childstr,
         )
-
-    def _repr_png_(self):
-        """
-        Draws and outputs in PNG for ipython.
-        PNG is used instead of PDF, since it can be displayed in the qt console and
-        has wider browser support.
-        """
-        import os
-        import base64
-        import subprocess
-        import tempfile
-        from nltk.draw.tree import tree_to_treesegment
-        from nltk.draw.util import CanvasFrame
-        from nltk.internals import find_binary
-
-        _canvas_frame = CanvasFrame()
-        widget = tree_to_treesegment(_canvas_frame.canvas(), self)
-        _canvas_frame.add_widget(widget)
-        x, y, w, h = widget.bbox()
-        # print_to_file uses scrollregion to set the width and height of the pdf.
-        _canvas_frame.canvas()["scrollregion"] = (0, 0, w, h)
-        with tempfile.NamedTemporaryFile() as file:
-            in_path = "{0:}.ps".format(file.name)
-            out_path = "{0:}.png".format(file.name)
-            _canvas_frame.print_to_file(in_path)
-            _canvas_frame.destroy_widget(widget)
-            try:
-                subprocess.call(
-                    [
-                        find_binary(
-                            "gs",
-                            binary_names=["gswin32c.exe", "gswin64c.exe"],
-                            env_vars=["PATH"],
-                            verbose=False,
-                        )
-                    ]
-                    + "-q -dEPSCrop -sDEVICE=png16m -r90 -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dSAFER -dBATCH -dNOPAUSE -sOutputFile={0:} {1:}".format(
-                        out_path, in_path
-                    ).split()
-                )
-            except LookupError as e:
-                pre_error_message = str(
-                    "The Ghostscript executable isn't found.\n"
-                    "See http://web.mit.edu/ghostscript/www/Install.htm\n"
-                    "If you're using a Mac, you can try installing\n"
-                    "https://docs.brew.sh/Installation then `brew install ghostscript`"
-                )
-                print(pre_error_message, file=sys.stderr)
-                raise LookupError from e
-
-            with open(out_path, "rb") as sr:
-                res = sr.read()
-            os.remove(in_path)
-            os.remove(out_path)
-            return base64.b64encode(res).decode()
 
     def __str__(self):
         return self.pformat()
@@ -1546,153 +1358,3 @@ class ImmutableMultiParentedTree(ImmutableTree, MultiParentedTree):
     pass
 
 
-######################################################################
-## Probabilistic trees
-######################################################################
-
-
-
-class ProbabilisticTree(Tree, ProbabilisticMixIn):
-    def __init__(self, node, children=None, **prob_kwargs):
-        Tree.__init__(self, node, children)
-        ProbabilisticMixIn.__init__(self, **prob_kwargs)
-
-    # We have to patch up these methods to make them work right:
-    def _frozen_class(self):
-        return ImmutableProbabilisticTree
-
-    def __repr__(self):
-        return "%s (p=%r)" % (Tree.__repr__(self), self.prob())
-
-    def __str__(self):
-        return "%s (p=%.6g)" % (self.pformat(margin=60), self.prob())
-
-    def copy(self, deep=False):
-        if not deep:
-            return type(self)(self._label, self, prob=self.prob())
-        else:
-            return type(self).convert(self)
-
-    @classmethod
-    def convert(cls, val):
-        if isinstance(val, Tree):
-            children = [cls.convert(child) for child in val]
-            if isinstance(val, ProbabilisticMixIn):
-                return cls(val._label, children, prob=val.prob())
-            else:
-                return cls(val._label, children, prob=1.0)
-        else:
-            return val
-
-    def __eq__(self, other):
-        return self.__class__ is other.__class__ and (
-            self._label,
-            list(self),
-            self.prob(),
-        ) == (other._label, list(other), other.prob())
-
-    def __lt__(self, other):
-        if not isinstance(other, Tree):
-            raise_unorderable_types("<", self, other)
-        if self.__class__ is other.__class__:
-            return (self._label, list(self), self.prob()) < (
-                other._label,
-                list(other),
-                other.prob(),
-            )
-        else:
-            return self.__class__.__name__ < other.__class__.__name__
-
-
-
-class ImmutableProbabilisticTree(ImmutableTree, ProbabilisticMixIn):
-    def __init__(self, node, children=None, **prob_kwargs):
-        ImmutableTree.__init__(self, node, children)
-        ProbabilisticMixIn.__init__(self, **prob_kwargs)
-        self._hash = hash((self._label, tuple(self), self.prob()))
-
-    # We have to patch up these methods to make them work right:
-    def _frozen_class(self):
-        return ImmutableProbabilisticTree
-
-    def __repr__(self):
-        return "%s [%s]" % (Tree.__repr__(self), self.prob())
-
-    def __str__(self):
-        return "%s [%s]" % (self.pformat(margin=60), self.prob())
-
-    def copy(self, deep=False):
-        if not deep:
-            return type(self)(self._label, self, prob=self.prob())
-        else:
-            return type(self).convert(self)
-
-    @classmethod
-    def convert(cls, val):
-        if isinstance(val, Tree):
-            children = [cls.convert(child) for child in val]
-            if isinstance(val, ProbabilisticMixIn):
-                return cls(val._label, children, prob=val.prob())
-            else:
-                return cls(val._label, children, prob=1.0)
-        else:
-            return val
-
-
-def _child_names(tree):
-    names = []
-    for child in tree:
-        if isinstance(child, Tree):
-            names.append(Nonterminal(child._label))
-        else:
-            names.append(child)
-    return names
-
-
-######################################################################
-## Parsing
-######################################################################
-
-
-def bracket_parse(s):
-    """
-    Use Tree.read(s, remove_empty_top_bracketing=True) instead.
-    """
-    raise NameError("Use Tree.read(s, remove_empty_top_bracketing=True) instead.")
-
-
-def sinica_parse(s):
-    """
-    Parse a Sinica Treebank string and return a tree.  Trees are represented as nested brackettings,
-    as shown in the following example (X represents a Chinese character):
-    S(goal:NP(Head:Nep:XX)|theme:NP(Head:Nhaa:X)|quantity:Dab:X|Head:VL2:X)#0(PERIODCATEGORY)
-
-    :return: A tree corresponding to the string representation.
-    :rtype: Tree
-    :param s: The string to be converted
-    :type s: str
-    """
-    tokens = re.split(r"([()| ])", s)
-    for i in range(len(tokens)):
-        if tokens[i] == "(":
-            tokens[i - 1], tokens[i] = (
-                tokens[i],
-                tokens[i - 1],
-            )  # pull nonterminal inside parens
-        elif ":" in tokens[i]:
-            fields = tokens[i].split(":")
-            if len(fields) == 2:  # non-terminal
-                tokens[i] = fields[1]
-            else:
-                tokens[i] = "(" + fields[-2] + " " + fields[-1] + ")"
-        elif tokens[i] == "|":
-            tokens[i] = ""
-
-    treebank_string = " ".join(tokens)
-    return Tree.fromstring(treebank_string, remove_empty_top_bracketing=True)
-
-
-#    s = re.sub(r'^#[^\s]*\s', '', s)  # remove leading identifier
-#    s = re.sub(r'\w+:', '', s)       # remove role tags
-
-#    return s
