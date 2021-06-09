@@ -556,16 +556,16 @@ class MergeRule(RegexpChunkRule):
         """
         # Ensure that the individual patterns are coherent.  E.g., if
         # left='(' and right=')', then this will raise an exception:
-        re.compile(tag_pattern2re_pattern(left_tag_pattern))
-        re.compile(tag_pattern2re_pattern(right_tag_pattern))
+        ltp = re.compile(tag_pattern2re_pattern(left_tag_pattern))
+        rtp = re.compile(tag_pattern2re_pattern(right_tag_pattern))
 
         self._left_tag_pattern = left_tag_pattern
         self._right_tag_pattern = right_tag_pattern
         regexp = re.compile(
             "(?P<left>%s)}{(?=%s)"
             % (
-                tag_pattern2re_pattern(left_tag_pattern),
-                tag_pattern2re_pattern(right_tag_pattern),
+                ltp,
+                rtp,
             )
         )
         RegexpChunkRule.__init__(self, regexp, "\g<left>", descr)
@@ -625,16 +625,16 @@ class SplitRule(RegexpChunkRule):
         """
         # Ensure that the individual patterns are coherent.  E.g., if
         # left='(' and right=')', then this will raise an exception:
-        re.compile(tag_pattern2re_pattern(left_tag_pattern))
-        re.compile(tag_pattern2re_pattern(right_tag_pattern))
+        ltp = re.compile(tag_pattern2re_pattern(left_tag_pattern))
+        rtp = re.compile(tag_pattern2re_pattern(right_tag_pattern))
 
         self._left_tag_pattern = left_tag_pattern
         self._right_tag_pattern = right_tag_pattern
         regexp = re.compile(
             "(?P<left>%s)(?=%s)"
             % (
-                tag_pattern2re_pattern(left_tag_pattern),
-                tag_pattern2re_pattern(right_tag_pattern),
+                ltp,
+                rtp,
             )
         )
         RegexpChunkRule.__init__(self, regexp, r"\g<left>}{", descr)
@@ -695,16 +695,16 @@ class ExpandLeftRule(RegexpChunkRule):
         """
         # Ensure that the individual patterns are coherent.  E.g., if
         # left='(' and right=')', then this will raise an exception:
-        re.compile(tag_pattern2re_pattern(left_tag_pattern))
-        re.compile(tag_pattern2re_pattern(right_tag_pattern))
+        ltp = re.compile(tag_pattern2re_pattern(left_tag_pattern))
+        rtp = re.compile(tag_pattern2re_pattern(right_tag_pattern))
 
         self._left_tag_pattern = left_tag_pattern
         self._right_tag_pattern = right_tag_pattern
         regexp = re.compile(
             "(?P<left>%s)\{(?P<right>%s)"
             % (
-                tag_pattern2re_pattern(left_tag_pattern),
-                tag_pattern2re_pattern(right_tag_pattern),
+                ltp,
+                rtp,
             )
         )
         RegexpChunkRule.__init__(self, regexp, "{\g<left>\g<right>", descr)
@@ -765,16 +765,16 @@ class ExpandRightRule(RegexpChunkRule):
         """
         # Ensure that the individual patterns are coherent.  E.g., if
         # left='(' and right=')', then this will raise an exception:
-        re.compile(tag_pattern2re_pattern(left_tag_pattern))
-        re.compile(tag_pattern2re_pattern(right_tag_pattern))
+        ltp = re.compile(tag_pattern2re_pattern(left_tag_pattern))
+        rtp = re.compile(tag_pattern2re_pattern(right_tag_pattern))
 
         self._left_tag_pattern = left_tag_pattern
         self._right_tag_pattern = right_tag_pattern
         regexp = re.compile(
             "(?P<left>%s)\}(?P<right>%s)"
             % (
-                tag_pattern2re_pattern(left_tag_pattern),
-                tag_pattern2re_pattern(right_tag_pattern),
+                ltp,
+                rtp,
             )
         )
         RegexpChunkRule.__init__(self, regexp, "\g<left>\g<right>}", descr)
@@ -844,9 +844,9 @@ class ChunkRuleWithContext(RegexpChunkRule):
         """
         # Ensure that the individual patterns are coherent.  E.g., if
         # left='(' and right=')', then this will raise an exception:
-        re.compile(tag_pattern2re_pattern(left_context_tag_pattern))
-        re.compile(tag_pattern2re_pattern(chunk_tag_pattern))
-        re.compile(tag_pattern2re_pattern(right_context_tag_pattern))
+        lctp = re.compile(tag_pattern2re_pattern(left_context_tag_pattern))
+        ctp = re.compile(tag_pattern2re_pattern(chunk_tag_pattern))
+        rctp = re.compile(tag_pattern2re_pattern(right_context_tag_pattern))
 
         self._left_context_tag_pattern = left_context_tag_pattern
         self._chunk_tag_pattern = chunk_tag_pattern
@@ -854,9 +854,9 @@ class ChunkRuleWithContext(RegexpChunkRule):
         regexp = re.compile(
             "(?P<left>%s)(?P<chunk>%s)(?P<right>%s)%s"
             % (
-                tag_pattern2re_pattern(left_context_tag_pattern),
-                tag_pattern2re_pattern(chunk_tag_pattern),
-                tag_pattern2re_pattern(right_context_tag_pattern),
+                lctp,
+                ctp,
+                rctp,
                 ChunkString.IN_CHINK_PATTERN,
             )
         )
