@@ -47,12 +47,11 @@ from nltk.tree import *
 
 from nltk.chunk import *
 from nltk.tag import *
-from nltk.tokenize import *
 
 # explicitly import all top-level modules (ensuring
 # they override the same names inadvertently imported
 # from a subpackage)
 
 from nltk import chunk
-from nltk import tag, tokenize, tree
+from nltk import tag, tree
 
