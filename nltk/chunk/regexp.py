@@ -10,11 +10,6 @@ import re
 
 from nltk.tree import Tree
 
-##//////////////////////////////////////////////////////
-##  ChunkString
-##//////////////////////////////////////////////////////
-
-
 class ChunkString(object):
     """
     A string-based encoding of a particular chunking of a text.
@@ -218,14 +213,6 @@ class ChunkString(object):
         self._str = s
 
     def __repr__(self):
-        """
-        Return a string representation of this ``ChunkString``.
-        It has the form::
-
-            <ChunkString: '{<DT><JJ><NN>}<VBN><IN>{<DT><NN>}'>
-
-        :rtype: str
-        """
         return "<ChunkString: %s>" % repr(self._str)
 
     def __str__(self):
@@ -325,17 +312,6 @@ class RegexpChunkRule(object):
         return self._descr
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <RegexpChunkRule: '{<IN|VB.*>}'->'<IN>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-        :rtype: str
-        """
         return (
             "<RegexpChunkRule: "
             + repr(self._regexp.pattern)
@@ -422,17 +398,6 @@ class ChunkRule(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, "{\g<chunk>}", descr)
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <ChunkRule: '<IN|VB.*>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-        :rtype: str
-        """
         return "<ChunkRule: " + repr(self._pattern) + ">"
 
 
@@ -467,17 +432,6 @@ class ChinkRule(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, "}\g<chink>{", descr)
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <ChinkRule: '<IN|VB.*>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-        :rtype: str
-        """
         return "<ChinkRule: " + repr(self._pattern) + ">"
 
 
@@ -507,17 +461,6 @@ class UnChunkRule(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, "\g<chunk>", descr)
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <UnChunkRule: '<IN|VB.*>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-        :rtype: str
-        """
         return "<UnChunkRule: " + repr(self._pattern) + ">"
 
 
@@ -571,17 +514,6 @@ class MergeRule(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, "\g<left>", descr)
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <MergeRule: '<NN|DT|JJ>', '<NN|JJ>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-        :rtype: str
-        """
         return (
             "<MergeRule: "
             + repr(self._left_tag_pattern)
@@ -640,17 +572,6 @@ class SplitRule(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, r"\g<left>}{", descr)
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <SplitRule: '<NN>', '<DT>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-       :rtype: str
-        """
         return (
             "<SplitRule: "
             + repr(self._left_tag_pattern)
@@ -710,17 +631,6 @@ class ExpandLeftRule(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, "{\g<left>\g<right>", descr)
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <ExpandLeftRule: '<NN|DT|JJ>', '<NN|JJ>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-        :rtype: str
-        """
         return (
             "<ExpandLeftRule: "
             + repr(self._left_tag_pattern)
@@ -780,17 +690,6 @@ class ExpandRightRule(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, "\g<left>\g<right>}", descr)
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <ExpandRightRule: '<NN|DT|JJ>', '<NN|JJ>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-        :rtype: str
-        """
         return (
             "<ExpandRightRule: "
             + repr(self._left_tag_pattern)
@@ -864,17 +763,6 @@ class ChunkRuleWithContext(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, replacement, descr)
 
     def __repr__(self):
-        """
-        Return a string representation of this rule.  It has the form::
-
-            <ChunkRuleWithContext: '<IN>', '<NN>', '<DT>'>
-
-        Note that this representation does not include the
-        description string; that string can be accessed
-        separately with the ``descr()`` method.
-
-        :rtype: str
-        """
         return "<ChunkRuleWithContext:  %r, %r, %r>" % (
             self._left_context_tag_pattern,
             self._chunk_tag_pattern,
@@ -1098,18 +986,9 @@ class RegexpChunkParser:
         return self._rules
 
     def __repr__(self):
-        """
-        :return: a concise string representation of this
-            ``RegexpChunkParser``.
-        :rtype: str
-        """
         return "<RegexpChunkParser with %d rules>" % len(self._rules)
 
     def __str__(self):
-        """
-        :return: a verbose string representation of this ``RegexpChunkParser``.
-        :rtype: str
-        """
         s = "RegexpChunkParser with %d rules:\n" % len(self._rules)
         margin = 0
         for rule in self._rules:
@@ -1275,20 +1154,10 @@ class RegexpParser:
         return chunk_struct
 
     def __repr__(self):
-        """
-        :return: a concise string representation of this ``chunk.RegexpParser``.
-        :rtype: str
-        """
         return "<chunk.RegexpParser with %d stages>" % len(self._stages)
 
     def __str__(self):
-        """
-        :return: a verbose string representation of this
-            ``RegexpParser``.
-        :rtype: str
-        """
         s = "chunk.RegexpParser with %d stages:\n" % len(self._stages)
-        margin = 0
         for parser in self._stages:
             s += "%s\n" % parser
         return s[:-1]
