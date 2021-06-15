@@ -88,12 +88,11 @@ class Tree(list):
     def __init__(self, node, children=None):
         if children is None:
             raise TypeError(
-                "%s: Expected a node value and child list " % type(self).__name__
+                f"{type(self).__name__}: Expected a node value and child list "
             )
         elif isinstance(children, str):
             raise TypeError(
-                "%s() argument 2 should be a list, not a "
-                "string" % type(self).__name__
+                f"{type(self).__name__}() argument 2 should be a list, not a string"
             )
         else:
             list.__init__(self, children)
@@ -471,6 +470,7 @@ class Tree(list):
         node_pattern=None,
         leaf_pattern=None,
         remove_empty_top_bracketing=False,
+        contains_spaces=re.compile(r"\s").search,
     ):
         """
         Read a bracketed tree string and return the resulting tree.
@@ -523,17 +523,17 @@ class Tree(list):
         """
         if not isinstance(brackets, str) or len(brackets) != 2:
             raise TypeError("brackets must be a length-2 string")
-        if re.search("\s", brackets):
+        if contains_spaces(brackets):
             raise TypeError("whitespace brackets not allowed")
         # Construct a regexp that will tokenize the string.
         open_b, close_b = brackets
         open_pattern, close_pattern = (re.escape(open_b), re.escape(close_b))
         if node_pattern is None:
-            node_pattern = "[^\s%s%s]+" % (open_pattern, close_pattern)
+            node_pattern = r"[^\s%s%s]+" % (open_pattern, close_pattern)
         if leaf_pattern is None:
-            leaf_pattern = "[^\s%s%s]+" % (open_pattern, close_pattern)
+            leaf_pattern = r"[^\s%s%s]+" % (open_pattern, close_pattern)
         token_re = re.compile(
-            "%s\s*(%s)?|%s|(%s)"
+            r"%s\s*(%s)?|%s|(%s)"
             % (open_pattern, node_pattern, close_pattern, leaf_pattern)
         )
         # Walk through each token, updating a stack of trees.
