@@ -63,6 +63,9 @@ Why create this seemingly redundant library? Why not use NLTK directly?
   ScanCode toolkit copyright and author detection and there are some
   improvements, simplification  and optimizations that would be difficult to
   implement in NLTK directly and unlikely to be accepted upstream.
+  Simplification of the code subset used for copyright detection enabled a big
+  boost in performances. Future improvements to track the tokens lines and
+  positions may not have been possible withing the NLTK API.
 
 - The newer versions of NLTK include several new required dependencies and we do
   not need any of these. This is turn makes every tool heavier and complex when
