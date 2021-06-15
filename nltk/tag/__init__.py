@@ -20,7 +20,4 @@ the word ``'fly'`` with a noun part of speech tag (``'NN'``):
     >>> tagged_tok = ('fly', 'NN')
 """
 
-from nltk.tag.sequential import (
-    SequentialBackoffTagger,
-    RegexpTagger,
-)
+from nltk.tag.sequential import RegexpTagger
