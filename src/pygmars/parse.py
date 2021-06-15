@@ -19,7 +19,7 @@ from pygmars.tree import Tree
 """
 Classes to parse list of recognized tokens in a parse tree.
 
-Originally based on NLTK PO chunk parsing used to identify non-overlapping
+Originally based on NLTK POS chunk parsing used to identify non-overlapping
 linguistic groups (such as base noun phrases) in unrestricted text.
 
 This lightweight parsing can identify, group and name sequences of tokens as
@@ -172,10 +172,9 @@ class ChunkString(object):
         {<DT><JJ><NN>}<VBN><IN>{<DT><NN>}<.>{<DT><NN>}<VBD><.>
 
     ``ChunkString`` are created from tagged texts (i.e., lists of
-    ``tokens`` whose type is ``TaggedType``).  Initially, nothing is
-    chunked.
+    ``tokens``.  Initially, nothing is chunked.
 
-    The chunking of a ``ChunkString`` can be modified with the ``xform()``
+    The chunking of a ``ChunkString`` can be modified with the ``apply_transform()``
     method, which uses a regular expression to transform the string
     representation.  These transformations should only add and remove
     braces; they should *not* modify the sequence of angle-bracket
@@ -337,7 +336,7 @@ class ChunkString(object):
 
         return Tree(self._root_label, pieces)
 
-    def xform(self, regexp, repl):
+    def apply_transform(self, regexp, repl):
         """
         Apply the given transformation to the string encoding of this
         ``ChunkString``.  In particular, find all occurrences that match
@@ -461,7 +460,7 @@ class RegexpChunkRule:
         :raise ValueError: If this transformation generated an
             invalid chunkstring.
         """
-        chunkstr.xform(self._regexp, self._repl)
+        chunkstr.apply_transform(self._regexp, self._repl)
 
     def __repr__(self):
         return f"<RegexpChunkRule: {self.regexp_pattern!r}->{self._repl!r}>"
@@ -742,7 +741,7 @@ class RegexpChunkParser:
             print(chunkstr)
         for rule in self.rules:
             # rule.apply(chunkstr)
-            chunkstr.xform(rule._regexp, rule._repl)
+            chunkstr.apply_transform(rule._regexp, rule._repl)
             if verbose:
                 print("#", rule.descr + " (" + repr(rule) + "):")
             elif trace:
