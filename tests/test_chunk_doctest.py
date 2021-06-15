@@ -13,7 +13,7 @@
     >>> from pygmars.parse import tag_pattern2re_pattern
     >>> from pygmars.parse import ChunkRule, ChunkString, RegexpChunkRule
     >>> from pygmars.parse import RegexpChunkParser, RegexpParser
-    >>> from pygmars import Tree
+    >>> from pygmars.tree import Tree
     >>> tagged_text = "[ The/DT cat/NN ] sat/VBD on/IN [ the/DT mat/NN ] [ the/DT dog/NN ] chewed/VBD ./."
 
     >>> unchunked_text = "[ The/DT cat/NN ] sat/VBD on/IN [ the/DT mat/NN ] [ the/DT dog/NN ] chewed/VBD ./."
@@ -136,7 +136,7 @@ Chunking Rules
 --------------
 
 Test the different rule constructors & __repr__ methods:
-
+    >>> import re
     >>> r1 = RegexpChunkRule('<a|b>'+ChunkString.IN_STRIP_PATTERN,
     ...                      '{<a|b>}', 'chunk <a> and <b>')
     >>> r2 = RegexpChunkRule(re.compile('<a|b>'+ChunkString.IN_STRIP_PATTERN),
