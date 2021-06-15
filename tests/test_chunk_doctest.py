@@ -1,13 +1,19 @@
-# .. Copyright (C) 2001-2020 NLTK Project
-# .. For license information, see LICENSE.TXT
+# Originally based on: Natural Language Toolkit
+# substantially modified for use in ScanCode-toolkit
+#
+# Natural Language Toolkit (NLTK)
+# Copyright (C) 2001-2020 NLTK Project
+# SPDX-License-Identifier: Apache-2.0
+# URL: <http://nltk.org/>
 """
 ==========
  Chunking
 ==========
 
-    >>> from nltk.chunk import *
-    >>> from nltk.chunk.regexp import *
-    >>> from nltk import Tree
+    >>> from pygmars.parse import tag_pattern2re_pattern
+    >>> from pygmars.parse import ChunkRule, ChunkString, RegexpChunkRule
+    >>> from pygmars.parse import RegexpChunkParser, RegexpParser
+    >>> from pygmars import Tree
     >>> tagged_text = "[ The/DT cat/NN ] sat/VBD on/IN [ the/DT mat/NN ] [ the/DT dog/NN ] chewed/VBD ./."
 
     >>> unchunked_text = "[ The/DT cat/NN ] sat/VBD on/IN [ the/DT mat/NN ] [ the/DT dog/NN ] chewed/VBD ./."
@@ -21,7 +27,6 @@
 
 Construct some new chunking rules.
 
-    >>> chunk_rule = ChunkRule("<.*>+", "Chunk everything")
     >>> chunk_rule = ChunkRule("<.*>+", "Chunk everything")
 
 Create a series of chunk parsers, successively more complex.

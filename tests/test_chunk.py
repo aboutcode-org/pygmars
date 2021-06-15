@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
+# Originally based on: Natural Language Toolkit
+# substantially modified for use in ScanCode-toolkit
+#
+# Natural Language Toolkit (NLTK)
+# Copyright (C) 2001-2020 NLTK Project
+# SPDX-License-Identifier: Apache-2.0
+# URL: <http://nltk.org/>
+
 import unittest
 
-from nltk import RegexpParser
+from pygmars.parse import RegexpParser
 
 
 class TestChunkRule(unittest.TestCase):

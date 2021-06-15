@@ -1,11 +1,16 @@
-# .. Copyright (C) 2001-2020 NLTK Project
+# Originally based on: Natural Language Toolkit
+# substantially modified for use in ScanCode-toolkit
+#
+# Natural Language Toolkit (NLTK)
+# Copyright (C) 2001-2020 NLTK Project
+# SPDX-License-Identifier: Apache-2.0
+# URL: <http://nltk.org/>
 """
-# .. For license information, see LICENSE.TXT
 ===============================
- Unit tests for nltk.tree.Tree
+ Unit tests for pygmars.tree.Tree
 ===============================
 
-    >>> from nltk.tree import *
+    >>> from pygmars.tree import *
 
 Some trees to run tests on:
 
@@ -82,7 +87,7 @@ type:
     >>> print(tree)
     (VP (V enjoyed) (NP my cookie))
     >>> print(type(tree))
-    <class 'nltk.tree.ImmutableTree'>
+    <class 'pygmars.tree.ImmutableTree'>
     >>> tree[1] = 'x'
     Traceback (most recent call last):
       . . .
@@ -244,7 +249,7 @@ Parented trees can be created from strings using the classmethod
     >>> print(ptree)
     (VP (VERB saw) (NP (DET the) (NOUN dog)))
     >>> print(type(ptree))
-    <class 'nltk.tree.ParentedTree'>
+    <class 'pygmars.tree.ParentedTree'>
 
 Parented trees can also be created by using the classmethod
 `ParentedTree.convert` to convert another type of tree to a parented
@@ -255,7 +260,7 @@ tree:
     >>> print(ptree)
     (VP (VERB saw) (NP (DET the) (NOUN dog)))
     >>> print(type(ptree))
-    <class 'nltk.tree.ParentedTree'>
+    <class 'pygmars.tree.ParentedTree'>
 
 .. clean-up:
 
@@ -707,7 +712,7 @@ ImmutableParentedTree Regression Tests
 
     >>> iptree = ImmutableParentedTree.convert(ptree)
     >>> type(iptree)
-    <class 'nltk.tree.ImmutableParentedTree'>
+    <class 'pygmars.tree.ImmutableParentedTree'>
     >>> del iptree[0]
     Traceback (most recent call last):
       . . .
@@ -1009,7 +1014,7 @@ ImmutableMultiParentedTree Regression Tests
 
     >>> imptree = ImmutableMultiParentedTree.convert(mptree)
     >>> type(imptree)
-    <class 'nltk.tree.ImmutableMultiParentedTree'>
+    <class 'pygmars.tree.ImmutableMultiParentedTree'>
     >>> del imptree[0]
     Traceback (most recent call last):
       . . .

@@ -1,13 +1,23 @@
-# Natural Language Toolkit (NLTK) Authors
+pygmars authors and onctributors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-## Original Authors
+- Philippe Ombredanne @pombredanne
+
+
+
+Natural Language Toolkit (NLTK) Authors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Original Authors
+------------------
 
 - Steven Bird <stevenbird1@gmail.com>
 - Edward Loper <edloper@gmail.com>
 - Ewan Klein <ewan@inf.ed.ac.uk>
 
 
-## Contributors
+Contributors
+---------------------
 
 - Tom Aarsen
 - Rami Al-Rfou'
@@ -271,15 +281,21 @@
 - Matt Chaput
 
 
-## Others whose work we've taken and included in NLTK, but who didn't directly contribute it:
-### Contributors to the Porter Stemmer
+Others whose work we've taken and included in NLTK, but who didn't directly contribute it:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Contributors to the Porter Stemmer
+-------------------------------------
+
 - Martin Porter
 - Vivake Gupta
 - Barry Wilkins
 - Hiranmay Ghosh
 - Chris Emerson
 
-### Authors of snowball arabic stemmer algorithm
+Authors of snowball arabic stemmer algorithm
+------------------------------------------------
+
 - Assem Chelli
 - Abdelkrim Aries
 - Lakhdar Benzahia
