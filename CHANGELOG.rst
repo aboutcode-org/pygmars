@@ -1,8 +1,8 @@
+================
 Changelog
-=========
+================
 
+Version 0.0.1
+---------------
 
-v0.0.0
-------
-
-*xxxx-xx-xx* -- Initial release.
+* Initial version derived from NLTK HEAD at a5690ee

@@ -2,8 +2,11 @@
 # Copyright (c) nexB Inc. and others.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Visit https://aboutcode.org and https://github.com/nexB/ for support and download.
+# Visit https://aboutcode.org and https://github.com/nexB/pygmars for support and download.
 # ScanCode is a trademark of nexB Inc.
+#
+# Based on a heavily modified Natural Language Toolkit (NLTK)
+# Copyright (C) NLTK Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
