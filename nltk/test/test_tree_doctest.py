@@ -1,6 +1,6 @@
-.. Copyright (C) 2001-2020 NLTK Project
-.. For license information, see LICENSE.TXT
-
+# .. Copyright (C) 2001-2020 NLTK Project
+"""
+# .. For license information, see LICENSE.TXT
 ===============================
  Unit tests for nltk.tree.Tree
 ===============================
@@ -31,37 +31,6 @@ every tree, subtree, and leaf, in prefix order:
     >>> print(tree.treepositions())
     [(), (0,), (0, 0), (0, 0, 0), (0, 1), (0, 1, 0), (1,), (1, 0), (1, 0, 0), (1, 1), (1, 1, 0), (1, 1, 0, 0), (1, 1, 1), (1, 1, 1, 0)]
 
-In addition to `str` and `repr`, several methods exist to convert a
-tree object to one of several standard tree encodings:
-
-    >>> print(tree.pformat_latex_qtree())
-    \Tree [.s
-            [.dp [.d the ] [.np dog ] ]
-            [.vp [.v chased ] [.dp [.d the ] [.np cat ] ] ] ]
-
-There is also a fancy ASCII art representation:
-
-    >>> tree.pretty_print()
-                  s               
-          ________|_____           
-         |              vp        
-         |         _____|___       
-         dp       |         dp    
-      ___|___     |      ___|___   
-     d       np   v     d       np
-     |       |    |     |       |  
-    the     dog chased the     cat
-
-    >>> tree.pretty_print(unicodelines=True, nodedist=4)
-                           s                        
-            ┌──────────────┴────────┐                   
-            │                       vp              
-            │              ┌────────┴──────┐            
-            dp             │               dp       
-     ┌──────┴──────┐       │        ┌──────┴──────┐     
-     d             np      v        d             np
-     │             │       │        │             │     
-    the           dog    chased    the           cat
 
 Trees can be initialized from treebank strings:
 
@@ -153,12 +122,11 @@ then `Tree.fromstring` raises an exception:
       . . .
     TypeError: brackets must be a length-2 string
 
-(We may add support for multi-character brackets in the future, in
-which case the ``brackets=('<<','>>')`` example would start working.)
-
+We may add support for multi-character brackets in the future, in
+which case the ``brackets=('<<','>>')`` example would start working.
 Whitespace brackets are not permitted:
 
-    >>> Tree.fromstring('(NP my cookie\n', brackets='(\n')
+    >>> Tree.fromstring('(NP my cookie\\n',brackets='(\\n')
     Traceback (most recent call last):
       . . .
     TypeError: whitespace brackets not allowed
@@ -169,42 +137,42 @@ ValueError, with a description of the problem:
     >>> Tree.fromstring('(NP my cookie) (NP my milk)')
     Traceback (most recent call last):
       . . .
-    ValueError: Tree.fromstring(): expected 'end-of-string' but got '(NP'
+    ValueError: Tree.read(): expected 'end-of-string' but got '(NP'
                 at index 15.
                     "...y cookie) (NP my mil..."
                                   ^
     >>> Tree.fromstring(')NP my cookie(')
     Traceback (most recent call last):
       . . .
-    ValueError: Tree.fromstring(): expected '(' but got ')'
+    ValueError: Tree.read(): expected '(' but got ')'
                 at index 0.
                     ")NP my coo..."
                      ^
     >>> Tree.fromstring('(NP my cookie))')
     Traceback (most recent call last):
       . . .
-    ValueError: Tree.fromstring(): expected 'end-of-string' but got ')'
+    ValueError: Tree.read(): expected 'end-of-string' but got ')'
                 at index 14.
                     "...my cookie))"
                                   ^
     >>> Tree.fromstring('my cookie)')
     Traceback (most recent call last):
       . . .
-    ValueError: Tree.fromstring(): expected '(' but got 'my'
+    ValueError: Tree.read(): expected '(' but got 'my'
                 at index 0.
                     "my cookie)"
                      ^
     >>> Tree.fromstring('(NP my cookie')
     Traceback (most recent call last):
       . . .
-    ValueError: Tree.fromstring(): expected ')' but got 'end-of-string'
+    ValueError: Tree.read(): expected ')' but got 'end-of-string'
                 at index 13.
                     "... my cookie"
                                   ^
     >>> Tree.fromstring('')
     Traceback (most recent call last):
       . . .
-    ValueError: Tree.fromstring(): expected '(' but got 'end-of-string'
+    ValueError: Tree.read(): expected '(' but got 'end-of-string'
                 at index 0.
                     ""
                      ^
@@ -241,18 +209,6 @@ transform the string values of nodes or leaves.
     ...                  read_leaf=lambda s: '"%s"' % s))
     (<A> "b" (<C> "d" "e") (<F> (<G> "h" "i")))
 
-These transformation functions are typically used when the node or
-leaf labels should be parsed to a non-string value (such as a feature
-structure).  If node and leaf labels need to be able to include
-whitespace, then you must also use the optional `node_pattern` and
-`leaf_pattern` arguments.
-
-    >>> from nltk.featstruct import FeatStruct
-    >>> tree = Tree.fromstring('([cat=NP] [lex=the] [lex=dog])',
-    ...                   read_node=FeatStruct, read_leaf=FeatStruct)
-    >>> tree.set_label(tree.label().unify(FeatStruct('[num=singular]')))
-    >>> print(tree)
-    ([cat='NP', num='singular'] [lex='the'] [lex='dog'])
 
 The optional argument ``remove_empty_top_bracketing`` can be used to
 remove any top-level empty bracketing that occurs.
@@ -1064,33 +1020,6 @@ ImmutableMultiParentedTree Regression Tests
     ValueError: ImmutableMultiParentedTree may not be modified
 
 
-ProbabilisticTree Regression Tests
-----------------------------------
-
-    >>> prtree = ProbabilisticTree("S", [ProbabilisticTree("NP", ["N"], prob=0.3)], prob=0.6)
-    >>> print(prtree)
-    (S (NP N)) (p=0.6)
-    >>> import copy
-    >>> prtree == copy.deepcopy(prtree) == prtree.copy(deep=True) == prtree.copy()
-    True
-    >>> prtree[0] is prtree.copy()[0]
-    True
-    >>> prtree[0] is prtree.copy(deep=True)[0]
-    False
-
-    >>> imprtree = ImmutableProbabilisticTree.convert(prtree)
-    >>> type(imprtree)
-    <class 'nltk.tree.ImmutableProbabilisticTree'>
-    >>> del imprtree[0]
-    Traceback (most recent call last):
-      . . .
-    ValueError: ImmutableProbabilisticTree may not be modified
-    >>> imprtree.set_label('newnode')
-    Traceback (most recent call last):
-      . . .
-    ValueError: ImmutableProbabilisticTree may not be modified
-
-
 Squashed Bugs
 =============
 
@@ -1099,3 +1028,4 @@ This used to discard the ``(B b)`` subtree (fixed in svn 6270):
     >>> print(Tree.fromstring('((A a) (B b))'))
     ( (A a) (B b))
 
+"""

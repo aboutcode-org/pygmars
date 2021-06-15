@@ -1,12 +1,13 @@
-.. Copyright (C) 2001-2020 NLTK Project
-.. For license information, see LICENSE.TXT
+# .. Copyright (C) 2001-2020 NLTK Project
+# .. For license information, see LICENSE.TXT
 
+"""
 Regression Tests
 ~~~~~~~~~~~~~~~~
-
+ 
 Sequential Taggers
 ------------------
-
+ 
 Add tests for:
   - make sure backoff is being done correctly.
   - make sure ngram taggers don't use previous sentences for context.
@@ -19,15 +20,17 @@ Add tests for:
   - make sure that ngram models only exclude contexts covered by the
     backoff tagger if the backoff tagger gets that context correct at
     *all* locations.
-
-
+ 
+ 
 Regression Testing for issue #1025
 ==================================
-
+ 
 We want to ensure that a RegexpTagger can be created with more than 100 patterns
 and does not fail with:
  "AssertionError: sorry, but this version only supports 100 named groups"
-
+ 
     >>> from nltk.tag import RegexpTagger
     >>> patterns = [(str(i), 'NNP',) for i in range(200)]
     >>> tagger = RegexpTagger(patterns)
+
+"""

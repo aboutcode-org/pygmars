@@ -83,4 +83,4 @@ class TestChunkRule(unittest.TestCase):
   by/IN
   (CHUNK Mayor-nominate/NN-TL Ivan/NP Allen/NP Jr./NP)
   ./.)"""
-        )
+          )

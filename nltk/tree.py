@@ -639,15 +639,9 @@ class Tree(list):
 
     def pprint(self, **kwargs):
         """
-        Print a string representation of this Tree to 'stream'
+        Print a string representation of this Tree
         """
-
-        if "stream" in kwargs:
-            stream = kwargs["stream"]
-            del kwargs["stream"]
-        else:
-            stream = None
-        print(self.pformat(**kwargs), file=stream)
+        print(self.pformat(**kwargs))
 
     def pformat(self, margin=70, indent=0, nodesep="", parens="()", quotes=False):
         """
@@ -681,7 +675,7 @@ class Tree(list):
                     + " " * (indent + 2)
                     + child.pformat(margin, indent + 2, nodesep, parens, quotes)
                 )
-            elif isinstance(child, tuple):
+            elif isinstance(child, (tuple, list)):
                 s += "\n" + " " * (indent + 2) + "/".join(child)
             elif isinstance(child, str) and not quotes:
                 s += "\n" + " " * (indent + 2) + "%s" % child
@@ -689,28 +683,6 @@ class Tree(list):
                 s += "\n" + " " * (indent + 2) + repr(child)
         return s + parens[1]
 
-    def pformat_latex_qtree(self):
-        r"""
-        Returns a representation of the tree compatible with the
-        LaTeX qtree package. This consists of the string ``\Tree``
-        followed by the tree represented in bracketed notation.
-
-        For example, the following result was generated from a parse tree of
-        the sentence ``The announcement astounded us``::
-
-          \Tree [.I'' [.N'' [.D The ] [.N' [.N announcement ] ] ]
-              [.I' [.V'' [.V' [.V astounded ] [.N'' [.N' [.N us ] ] ] ] ] ] ]
-
-        See http://www.ling.upenn.edu/advice/latex.html for the LaTeX
-        style file for the qtree package.
-
-        :return: A latex qtree representation of this tree.
-        :rtype: str
-        """
-        reserved_chars = re.compile("([#\$%&~_\{\}])")
-
-        pformat = self.pformat(indent=6, nodesep="", parens=("[.", " ]"))
-        return r"\Tree " + re.sub(reserved_chars, r"\\\1", pformat)
 
     def _pformat_flat(self, nodesep, parens, quotes):
         childstrs = []

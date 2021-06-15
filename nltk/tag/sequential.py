@@ -102,6 +102,10 @@ class SequentialBackoffTagger:
 ######################################################################
 
 
+
+
+
+
 class RegexpTagger(SequentialBackoffTagger):
     """
     Regular Expression Tagger
@@ -111,9 +115,10 @@ class RegexpTagger(SequentialBackoffTagger):
     uses word suffixes to make guesses about the correct Brown Corpus part
     of speech tag:
 
-        >>> from nltk.corpus import brown
         >>> from nltk.tag import RegexpTagger
-        >>> test_sent = brown.sents(categories='news')[0]
+        >>> sent = '''The Fulton County Grand Jury said Friday an investigation
+        ... of Atlanta's recent primary election produced `` no evidence '' that
+        ... any irregularities took place .'''.split()    
         >>> regexp_tagger = RegexpTagger(
         ...     [(r'^-?[0-9]+(.[0-9]+)?$', 'CD'),   # cardinal numbers
         ...      (r'(The|the|A|a|An|an)$', 'AT'),   # articles
@@ -127,13 +132,14 @@ class RegexpTagger(SequentialBackoffTagger):
         ... ])
         >>> regexp_tagger
         <Regexp Tagger: size=9>
-        >>> regexp_tagger.tag(test_sent)
-        [('The', 'AT'), ('Fulton', 'NN'), ('County', 'NN'), ('Grand', 'NN'), ('Jury', 'NN'),
-        ('said', 'NN'), ('Friday', 'NN'), ('an', 'AT'), ('investigation', 'NN'), ('of', 'NN'),
-        ("Atlanta's", 'NNS'), ('recent', 'NN'), ('primary', 'NN'), ('election', 'NN'),
-        ('produced', 'VBD'), ('``', 'NN'), ('no', 'NN'), ('evidence', 'NN'), ("''", 'NN'),
-        ('that', 'NN'), ('any', 'NN'), ('irregularities', 'NNS'), ('took', 'NN'),
-        ('place', 'NN'), ('.', 'NN')]
+        >>> result = regexp_tagger.tag(sent)
+        >>> expected = [('The', 'AT'), ('Fulton', 'NN'), ('County', 'NN'), ('Grand', 'NN'), ('Jury', 'NN'),
+        ... ('said', 'NN'), ('Friday', 'NN'), ('an', 'AT'), ('investigation', 'NN'), ('of', 'NN'),
+        ... ("Atlanta's", 'NNS'), ('recent', 'NN'), ('primary', 'NN'), ('election', 'NN'),
+        ... ('produced', 'VBD'), ('``', 'NN'), ('no', 'NN'), ('evidence', 'NN'), ("''", 'NN'),
+        ... ('that', 'NN'), ('any', 'NN'), ('irregularities', 'NNS'), ('took', 'NN'),
+        ... ('place', 'NN'), ('.', 'NN')]
+        >>> assert result == expected
 
     :type regexps: list(tuple(str, str))
     :param regexps: A list of ``(regexp, tag)`` pairs, each of

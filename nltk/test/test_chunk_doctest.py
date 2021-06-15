@@ -1,37 +1,30 @@
-.. Copyright (C) 2001-2020 NLTK Project
-.. For license information, see LICENSE.TXT
-
+# .. Copyright (C) 2001-2020 NLTK Project
+# .. For license information, see LICENSE.TXT
+"""
 ==========
  Chunking
 ==========
 
     >>> from nltk.chunk import *
-    >>> from nltk.chunk.util import *
     >>> from nltk.chunk.regexp import *
     >>> from nltk import Tree
-
     >>> tagged_text = "[ The/DT cat/NN ] sat/VBD on/IN [ the/DT mat/NN ] [ the/DT dog/NN ] chewed/VBD ./."
-    >>> gold_chunked_text = tagstr2tree(tagged_text)
-    >>> unchunked_text = gold_chunked_text.flatten()
 
-Chunking uses a special regexp syntax for rules that delimit the chunks. These
-rules must be converted to 'regular' regular expressions before a sentence can
-be chunked.
-
+    >>> unchunked_text = "[ The/DT cat/NN ] sat/VBD on/IN [ the/DT mat/NN ] [ the/DT dog/NN ] chewed/VBD ./."
+    >>> unchunked_text = unchunked_text.replace('[', '').replace(']', '').split()
+    >>> unchunked_text = [tuple(x.split('/')) for x in unchunked_text]
+    >>> plain_text = ' '.join([x[0] for x in unchunked_text])
     >>> tag_pattern = "<DT>?<JJ>*<NN.*>"
     >>> regexp_pattern = tag_pattern2re_pattern(tag_pattern)
     >>> regexp_pattern
-    '(<(DT)>)?(<(JJ)>)*(<(NN[^\\{\\}<>]*)>)'
+    '(<(DT)>)?(<(JJ)>)*(<(NN[^\\\\{\\\\}<>]*)>)'
 
 Construct some new chunking rules.
 
     >>> chunk_rule = ChunkRule("<.*>+", "Chunk everything")
-    >>> chink_rule = ChinkRule("<VBD|IN|\.>", "Chink on verbs/prepositions")
-    >>> split_rule = SplitRule("<DT><NN>", "<DT><NN>",
-    ...                        "Split successive determiner/noun pairs")
+    >>> chunk_rule = ChunkRule("<.*>+", "Chunk everything")
 
-
-Create and score a series of chunk parsers, successively more complex.
+Create a series of chunk parsers, successively more complex.
 
     >>> chunk_parser = RegexpChunkParser([chunk_rule], chunk_label='NP')
     >>> chunked_text = chunk_parser.parse(unchunked_text)
@@ -49,132 +42,17 @@ Create and score a series of chunk parsers, successively more complex.
         chewed/VBD
         ./.))
 
-    >>> chunkscore = ChunkScore()
-    >>> chunkscore.score(gold_chunked_text, chunked_text)
-    >>> print(chunkscore.precision())
-    0.0
-
-    >>> print(chunkscore.recall())
-    0.0
-
-    >>> print(chunkscore.f_measure())
-    0
-
-    >>> for chunk in sorted(chunkscore.missed()): print(chunk)
-    (NP The/DT cat/NN)
-    (NP the/DT dog/NN)
-    (NP the/DT mat/NN)
-
-    >>> for chunk in chunkscore.incorrect(): print(chunk)
-    (NP
-      The/DT
-      cat/NN
-      sat/VBD
-      on/IN
-      the/DT
-      mat/NN
-      the/DT
-      dog/NN
-      chewed/VBD
-      ./.)
-
-    >>> chunk_parser = RegexpChunkParser([chunk_rule, chink_rule],
-    ...                                  chunk_label='NP')
-    >>> chunked_text = chunk_parser.parse(unchunked_text)
-    >>> print(chunked_text)
-    (S
-      (NP The/DT cat/NN)
-      sat/VBD
-      on/IN
-      (NP the/DT mat/NN the/DT dog/NN)
-      chewed/VBD
-      ./.)
-    >>> assert chunked_text == chunk_parser.parse(list(unchunked_text))
-
-    >>> chunkscore = ChunkScore()
-    >>> chunkscore.score(gold_chunked_text, chunked_text)
-    >>> chunkscore.precision()
-    0.5
-
-    >>> print(chunkscore.recall())
-    0.33333333...
-
-    >>> print(chunkscore.f_measure())
-    0.4
-
-    >>> for chunk in sorted(chunkscore.missed()): print(chunk)
-    (NP the/DT dog/NN)
-    (NP the/DT mat/NN)
-
-    >>> for chunk in chunkscore.incorrect(): print(chunk)
-    (NP the/DT mat/NN the/DT dog/NN)
-
-    >>> chunk_parser = RegexpChunkParser([chunk_rule, chink_rule, split_rule],
-    ...                                  chunk_label='NP')
-    >>> chunked_text = chunk_parser.parse(unchunked_text, trace=True)
-    # Input:
-     <DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>  <.>
-    # Chunk everything:
-    {<DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>  <.>}
-    # Chink on verbs/prepositions:
-    {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>  <DT>  <NN>} <VBD>  <.>
-    # Split successive determiner/noun pairs:
-    {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>  <.>
-    >>> print(chunked_text)
-    (S
-      (NP The/DT cat/NN)
-      sat/VBD
-      on/IN
-      (NP the/DT mat/NN)
-      (NP the/DT dog/NN)
-      chewed/VBD
-      ./.)
-
-    >>> chunkscore = ChunkScore()
-    >>> chunkscore.score(gold_chunked_text, chunked_text)
-    >>> chunkscore.precision()
-    1.0
-
-    >>> chunkscore.recall()
-    1.0
-
-    >>> chunkscore.f_measure()
-    1.0
-
-    >>> chunkscore.missed()
-    []
-
-    >>> chunkscore.incorrect()
-    []
-
-    >>> chunk_parser.rules() # doctest: +NORMALIZE_WHITESPACE
-    [<ChunkRule: '<.*>+'>, <ChinkRule: '<VBD|IN|\\.>'>,
-     <SplitRule: '<DT><NN>', '<DT><NN>'>]
 
 Printing parsers:
 
     >>> print(repr(chunk_parser))
-    <RegexpChunkParser with 3 rules>
+    <RegexpChunkParser with 1 rules>
     >>> print(chunk_parser)
-    RegexpChunkParser with 3 rules:
-        Chunk everything
-          <ChunkRule: '<.*>+'>
-        Chink on verbs/prepositions
-          <ChinkRule: '<VBD|IN|\\.>'>
-        Split successive determiner/noun pairs
-          <SplitRule: '<DT><NN>', '<DT><NN>'>
+    RegexpChunkParser with 1 rules:
+        Chunk everything   <ChunkRule: '<.*>+'>
 
 Regression Tests
 ~~~~~~~~~~~~~~~~
-ChunkParserI
-------------
-`ChunkParserI` is an abstract interface -- it is not meant to be
-instantiated directly.
-
-    >>> ChunkParserI().parse([])
-    Traceback (most recent call last):
-      . . .
-    NotImplementedError
 
 
 ChunkString
@@ -254,28 +132,16 @@ Chunking Rules
 
 Test the different rule constructors & __repr__ methods:
 
-    >>> r1 = RegexpChunkRule('<a|b>'+ChunkString.IN_CHINK_PATTERN,
+    >>> r1 = RegexpChunkRule('<a|b>'+ChunkString.IN_STRIP_PATTERN,
     ...                      '{<a|b>}', 'chunk <a> and <b>')
-    >>> r2 = RegexpChunkRule(re.compile('<a|b>'+ChunkString.IN_CHINK_PATTERN),
+    >>> r2 = RegexpChunkRule(re.compile('<a|b>'+ChunkString.IN_STRIP_PATTERN),
     ...                      '{<a|b>}', 'chunk <a> and <b>')
     >>> r3 = ChunkRule('<a|b>', 'chunk <a> and <b>')
-    >>> r4 = ChinkRule('<a|b>', 'chink <a> and <b>')
-    >>> r5 = UnChunkRule('<a|b>', 'unchunk <a> and <b>')
-    >>> r6 = MergeRule('<a>', '<b>', 'merge <a> w/ <b>')
-    >>> r7 = SplitRule('<a>', '<b>', 'split <a> from <b>')
-    >>> r8 = ExpandLeftRule('<a>', '<b>', 'expand left <a> <b>')
-    >>> r9 = ExpandRightRule('<a>', '<b>', 'expand right <a> <b>')
-    >>> for rule in r1, r2, r3, r4, r5, r6, r7, r8, r9:
+    >>> for rule in r1, r2, r3:
     ...     print(rule)
-    <RegexpChunkRule: '<a|b>(?=[^\\}]*(\\{|$))'->'{<a|b>}'>
-    <RegexpChunkRule: '<a|b>(?=[^\\}]*(\\{|$))'->'{<a|b>}'>
+    <RegexpChunkRule: '<a|b>(?=[^\\\\}]*(\\\\{|$))'->'{<a|b>}'>
+    <RegexpChunkRule: '<a|b>(?=[^\\\\}]*(\\\\{|$))'->'{<a|b>}'>
     <ChunkRule: '<a|b>'>
-    <ChinkRule: '<a|b>'>
-    <UnChunkRule: '<a|b>'>
-    <MergeRule: '<a>', '<b>'>
-    <SplitRule: '<a>', '<b>'>
-    <ExpandLeftRule: '<a>', '<b>'>
-    <ExpandRightRule: '<a>', '<b>'>
 
 `tag_pattern2re_pattern()` complains if the tag pattern looks problematic:
 
@@ -348,22 +214,6 @@ RegexpParser
       (VP (V chewed/VBD))
       ./.)
 
-Test parsing of other rule types:
-
-    >>> print(RegexpParser('''
-    ... X:
-    ...   }<a><b>{     # chink rule
-    ...   <a>}{<b>     # split rule
-    ...   <a>{}<b>     # merge rule
-    ...   <a>{<b>}<c>  # chunk rule w/ context
-    ... '''))
-    chunk.RegexpParser with 1 stages:
-    RegexpChunkParser with 4 rules:
-        chink rule              <ChinkRule: '<a><b>'>
-        split rule              <SplitRule: '<a>', '<b>'>
-        merge rule              <MergeRule: '<a>', '<b>'>
-        chunk rule w/ context   <ChunkRuleWithContext: '<a>', '<b>', '<c>'>
-
 Illegal patterns give an error message:
 
     >>> print(RegexpParser('X: {<foo>} {<bar>}'))
@@ -371,3 +221,4 @@ Illegal patterns give an error message:
       . . .
     ValueError: Illegal chunk pattern: {<foo>} {<bar>}
 
+"""

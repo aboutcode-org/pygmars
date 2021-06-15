@@ -229,7 +229,7 @@ class ChunkString(object):
         self._str = s
 
     def __repr__(self):
-        return "<ChunkString: %s>" % repr(self._str)
+        return f"<ChunkString: {self._str!r}>"
 
     def __str__(self):
         """
@@ -245,7 +245,7 @@ class ChunkString(object):
         s = re.sub(r"([^\{])<", r"\1 <", s)
         if s[0] == "<":
             s = " " + s
-        return s
+        return s.rstrip()
 
 
 class RegexpChunkRule:
@@ -297,6 +297,7 @@ class RegexpChunkRule:
         self._repl = repl
         self.descr = descr
         self._regexp = regexp
+        self.regexp_pattern = regexp.pattern
 
     def apply(self, chunkstr):
         # Keep docstring generic so we can inherit it.
@@ -314,7 +315,7 @@ class RegexpChunkRule:
         chunkstr.xform(self._regexp, self._repl)
 
     def __repr__(self):
-        return f"<RegexpChunkRule: {self._regexp_pattern!r}->{self._repl!r}>"
+        return f"<RegexpChunkRule: {self.regexp_pattern!r}->{self._repl!r}>"
 
     @staticmethod
     def fromstring(
@@ -387,7 +388,7 @@ class ChunkRule(RegexpChunkRule):
         RegexpChunkRule.__init__(self, regexp, "{\g<chunk>}", descr)
 
     def __repr__(self):
-        return f"<ChunkRule: {self._pattern!r} >"
+        return f"<ChunkRule: {self._pattern!r}>"
 
 
 # this should probably be made more strict than it is -- e.g., it
@@ -448,6 +449,20 @@ def tag_pattern2re_pattern(tag_pattern, remove_spaces=re.compile(r"\s").sub, _ca
     # Check the regular expression
     if not is_chunk_tag_pattern(tag_pattern):
         raise ValueError("Bad tag pattern: %r" % tag_pattern)
+
+    # Replace "." with CHUNK_TAG_CHAR.
+    # We have to do this after, since it adds {}[]<>s, which would
+    # confuse CHUNK_TAG_PATTERN.
+    # PRE doesn't have lookback assertions, so reverse twice, and do
+    # the pattern backwards (with lookahead assertions).  This can be
+    # made much cleaner once we can switch back to SRE.
+    revrsd = "".join(reversed(tag_pattern))
+    
+    # (?! is a negative lookahead assertion
+    # therefore this would match:
+    # a dot not followed
+    revrsd = re.sub(r"\.(?!\\(\\\\)*($|[^\\]))", ChunkString.CHUNK_TAG_CHAR_REVERSED, revrsd)
+    tag_pattern = "".join(reversed(revrsd))
 
     _cache[orig_tag_pattern] = tag_pattern
     return tag_pattern
