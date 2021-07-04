@@ -9,17 +9,17 @@
 """
 Regression Tests
 ~~~~~~~~~~~~~~~~
- 
- 
+
+
 Regression Testing for NLTK issue #1025
 ===========================================
- 
-We want to ensure that a RegexpLexer can be created with more than 100 patterns
+
+We want to ensure that a Lexer can be created with more than 100 patterns
 and does not fail with:
  "AssertionError: sorry, but this version only supports 100 named groups"
- 
-    >>> from pygmars.lex import RegexpLexer
+
+    >>> from pygmars.lex import Lexer
     >>> patterns = [(str(i), 'NNP',) for i in range(200)]
-    >>> tagger = RegexpLexer(patterns)
+    >>> tagger = Lexer(patterns)
 
 """
