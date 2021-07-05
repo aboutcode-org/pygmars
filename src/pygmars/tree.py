@@ -38,49 +38,28 @@ class Tree(list):
 
         >>> from pygmars.tree import Tree
         >>> print(Tree(1, [2, Tree(3, [4]), 5]))
-        (1,
-         ('2',
-          (3, ('4',)),
-          '5'))
+        (1 2 (3 4) 5)
+
         >>> vp = Tree('VP', [Tree('V', ['saw']), Tree('NP', ['him'])])
         >>> s = Tree('S', [Tree('NP', ['I']), vp])
         >>> print(s)
-        ('S',
-         (('NP', ('I',)),
-          ('VP',
-           (('V', ('saw',)),
-            ('NP',
-             ('him',))))))
+        (S (NP I) (VP (V saw) (NP him)))
 
         >>> print(s[1])
-        ('VP',
-         (('V', ('saw',)),
-          ('NP', ('him',))))
+        (VP (V saw) (NP him))
 
         >>> print(s[1,1])
-        ('NP', ('him',))
+        (NP him)
 
         >>> t = Tree.from_string("(S (NP I) (VP (V saw) (NP him)))")
         >>> s == t
         True
         >>> print(t)
-        ('S',
-         (('NP', ('I',)),
-          ('VP',
-           (('V', ('saw',)),
-            ('NP',
-             ('him',))))))
+        (S (NP I) (VP (V saw) (NP him)))
 
         >>> t[0], t[1,1] = t[1,1], t[0]
         >>> print(t)
-        ('S',
-         (('NP', ('him',)),
-          ('VP',
-           (('V', ('saw',)),
-            ('NP',
-             ('I',))))))
-
-
+        (S (NP him) (VP (V saw) (NP I)))
 
     The length of a tree is the number of children it has.
 
@@ -234,12 +213,7 @@ class Tree(list):
 
         >>> t = Tree.from_string("(S (NP (D the) (N dog)) (VP (V chased) (NP (D the) (N cat))))")
         >>> print(t.flatten())
-        ('S',
-         ('the',
-          'dog',
-          'chased',
-          'the',
-          'cat'))
+        (S the dog chased the cat)
         """
         return Tree(self.label, self.leaves())
 
@@ -252,7 +226,6 @@ class Tree(list):
         read_leaf=None,
         node_pattern=None,
         leaf_pattern=None,
-        remove_empty_top_bracketing=False,
         contains_spaces=re.compile(r"\s").search,
     ):
         """
@@ -292,12 +265,6 @@ class Tree(list):
             used to find node and leaf substrings in ``s``.  By
             default, both nodes patterns are defined to match any
             sequence of non-whitespace non-bracket characters.
-
-        :type remove_empty_top_bracketing: bool
-        :param remove_empty_top_bracketing: If the resulting tree has
-            an empty node label, and is length one, then return its
-            single child instead.  This is useful for treebank trees,
-            which sometimes contain an extra level of bracketing.
 
         :return: A tree corresponding to the string representation ``s``.
             If this class method is called using a subclass of Tree,
@@ -358,11 +325,6 @@ class Tree(list):
             assert len(stack[0][1]) == 1
         tree = stack[0][1][0]
 
-        # If the tree has an extra level with node='', then get rid of
-        # it.  E.g.: "((S (NP ...) (VP ...)))"
-        if remove_empty_top_bracketing and tree._label == "" and len(tree) == 1:
-            tree = tree[0]
-        # return the tree.
         return tree
 
     @classmethod
@@ -397,27 +359,96 @@ class Tree(list):
         raise ValueError(msg)
 
     def __repr__(self):
-        from pprint import pformat
-        return pformat(self.serialized(), width=20)
+        childstr = ", ".join(repr(c) for c in self)
+        return "%s(%s, [%s])" % (
+            type(self).__name__,
+            repr(self.label),
+            childstr,
+        )
+
+    def __str__(self):
+        return self.pformat()
 
     def pprint(self, **kwargs):
+        """
+        Print a string representation of this Tree
+        """
         print(self.pformat(**kwargs))
 
-    def pformat(self, **kwargs):
-        return repr(self)
+    def pformat(self, margin=70, indent=0, nodesep="", parens="()", quotes=False):
+        """
+        :return: A pretty-printed string representation of this tree.
+        :rtype: str
+        :param margin: The right margin at which to do line-wrapping.
+        :type margin: int
+        :param indent: The indentation level at which printing
+            begins.  This number is used to decide how far to indent
+            subsequent lines.
+        :type indent: int
+        :param nodesep: A string that is used to separate the node
+            from the children.  E.g., the default value ``':'`` gives
+            trees like ``(S: (NP: I) (VP: (V: saw) (NP: it)))``.
+        """
 
-    def serialized(self):
-        return self.label, tuple([
-            x.serialized() if hasattr(x, "serialized") else str(x)
-            for x in self
-        ])
+        # Try writing it on one line.
+        s = self._pformat_flat(nodesep, parens, quotes)
+        if len(s) + indent < margin:
+            return s
+
+        # If it doesn't fit on one line, then write it on multi-lines.
+        if isinstance(self.label, str):
+            s = "%s%s%s" % (parens[0], self.label, nodesep)
+        else:
+            s = "%s%s%s" % (parens[0], repr(self.label), nodesep)
+        for child in self:
+            if isinstance(child, Tree):
+                s += (
+                    "\n"
+                    +" " * (indent + 2)
+                    +child.pformat(margin, indent + 2, nodesep, parens, quotes)
+                )
+            elif isinstance(child, (tuple, list)):
+                s += "\n" + " " * (indent + 2) + "/".join(child)
+            elif isinstance(child, str) and not quotes:
+                s += "\n" + " " * (indent + 2) + "%s" % child
+            else:
+                s += "\n" + " " * (indent + 2) + repr(child)
+        return s + parens[1]
+
+    def _pformat_flat(self, nodesep, parens, quotes):
+        childstrs = []
+        for child in self:
+            if isinstance(child, Tree):
+                childstrs.append(child._pformat_flat(nodesep, parens, quotes))
+            elif isinstance(child, tuple):
+                childstrs.append("/".join(child))
+            elif isinstance(child, str) and not quotes:
+                childstrs.append("%s" % child)
+            else:
+                childstrs.append(repr(child))
+        if isinstance(self.label, str):
+            return "%s%s%s %s%s" % (
+                parens[0],
+                self.label,
+                nodesep,
+                " ".join(childstrs),
+                parens[1],
+            )
+        else:
+            return "%s%s%s %s%s" % (
+                parens[0],
+                repr(self.label),
+                nodesep,
+                " ".join(childstrs),
+                parens[1],
+            )
+
+
 
 """
-
-    >>> from pygmars.tree import *
-
 Some trees to run tests on:
 
+    >>> from pygmars.tree import *
     >>> dp1 = Tree('dp', [Tree('d', ['the']), Tree('np', ['dog'])])
     >>> dp2 = Tree('dp', [Tree('d', ['the']), Tree('np', ['cat'])])
     >>> vp = Tree('vp', [Tree('v', ['chased']), dp2])

@@ -33,17 +33,17 @@ Create a Rule:
     >>> rule = Rule(pattern, label='NP', description=description)
     >>> parsed = rule.parse(tokens)
     >>> print(parsed)
-    ('ROOT',
-     (('NP',
-       ('Token(The/DT)',
-        'Token(cat/NN)',
-        'Token(sat/VBD)',
-        'Token(on/IN)',
-        'Token(the/DT)',
-        'Token(mat/NN)',
-        'Token(the/DT)',
-        'Token(dog/NN)',
-        'Token(chewed/VBD)')),))
+    (ROOT
+      (NP
+        The/DT
+        cat/NN
+        sat/VBD
+        on/IN
+        the/DT
+        mat/NN
+        the/DT
+        dog/NN
+        chewed/VBD))
 
 Printing Rule:
 
@@ -161,13 +161,13 @@ Test the different rule constructors and __repr__ methods:
 Rule
 -----------------
 
-A warning is printed when parsing an empty sentence:
+An exception is raise when parsing an empty tree:
 
     >>> parser = Rule('<a>', '')
     >>> parser.parse(Tree('S', []))
     Traceback (most recent call last):
       . . .
-    Exception: Warning: parsing empty tree: ('S', ())
+    Exception: Warning: parsing empty tree: Tree('S', [])
 
 
 Parser
@@ -211,25 +211,13 @@ Parser
      <NP>  <V>  <PP>  <NP>  <V>
     # VP -> V (NP|PP)*:
      <NP> {<V>  <PP>  <NP>}{<V>}
-    ('ROOT',
-     (('NP',
-       ('Token(The/DT)',
-        'Token(cat/NN)')),
-      ('VP',
-       (('V',
-         ('Token(sat/VBD)',)),
-        ('PP',
-         (('P',
-           ('Token(on/IN)',)),
-          ('NP',
-           ('Token(the/DT)',
-            'Token(mat/NN)')))),
-        ('NP',
-         ('Token(the/DT)',
-          'Token(dog/NN)')))),
-      ('VP',
-       (('V',
-         ('Token(chewed/VBD)',)),))))
+    (ROOT
+      (NP The/DT cat/NN)
+      (VP
+        (V sat/VBD)
+        (PP (P on/IN) (NP the/DT mat/NN))
+        (NP the/DT dog/NN))
+      (VP (V chewed/VBD)))
 
 
 Illegal patterns give an error message:

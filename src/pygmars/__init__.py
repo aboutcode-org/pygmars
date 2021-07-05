@@ -30,6 +30,9 @@ class Token:
         self.pos = pos
 
     def __repr__(self, *args, **kwargs):
+        return f'{self.value}/{self.label}'
+
+    def __str__(self, *args, **kwargs):
         return f'Token({self.value!r}, {self.label!r}, {self.start_line}, {self.pos})'
 
     @classmethod
@@ -72,9 +75,6 @@ class Token:
         """
         for pos, (value, label) in enumerate(value_labels):
                 yield cls(value, label=label, pos=pos)
-
-    def serialized(self):
-        return f"Token({self.value}/{self.label})"
 
 
 only_wordchars = re.compile(r'[^A-Z0-9\-]').sub

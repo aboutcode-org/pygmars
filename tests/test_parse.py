@@ -63,43 +63,35 @@ class TestRule(unittest.TestCase):
         tokens = list(Token.from_value_label_tuples(value_labels))
         cp = Parser('GROUP: {<N.*>{4,}}')
         tree = cp.parse(tokens)
-        expected = """('ROOT',
- ('Token(The/AT)',
-  'Token(September-October/NP)',
-  'Token(term/NN)',
-  'Token(jury/NN)',
-  'Token(had/HVD)',
-  'Token(been/BEN)',
-  'Token(charged/VBN)',
-  'Token(by/IN)',
-  'Token(Fulton/NP-TL)',
-  'Token(Superior/JJ-TL)',
-  ('GROUP',
-   ('Token(Court/NN-TL)',
-    'Token(Judge/NN-TL)',
-    'Token(Durwood/NP)',
-    'Token(Pye/NP)')),
-  'Token(to/TO)',
-  'Token(investigate/VB)',
-  'Token(reports/NNS)',
-  'Token(of/IN)',
-  'Token(possible/JJ)',
-  'Token(``/BACKTICK)',
-  'Token(irregularities/NNS)',
-  "Token(''/QUOTE)",
-  'Token(in/IN)',
-  'Token(the/AT)',
-  'Token(hard-fought/JJ)',
-  'Token(primary/NN)',
-  'Token(which/WDT)',
-  'Token(was/BEDZ)',
-  'Token(won/VBN)',
-  'Token(by/IN)',
-  ('GROUP',
-   ('Token(Mayor-nominate/NN-TL)',
-    'Token(Ivan/NP)',
-    'Token(Allen/NP)',
-    'Token(Jr./NP)')),
-  'Token(./DOT)'))"""
+        expected = """(ROOT
+  The/AT
+  September-October/NP
+  term/NN
+  jury/NN
+  had/HVD
+  been/BEN
+  charged/VBN
+  by/IN
+  Fulton/NP-TL
+  Superior/JJ-TL
+  (GROUP Court/NN-TL Judge/NN-TL Durwood/NP Pye/NP)
+  to/TO
+  investigate/VB
+  reports/NNS
+  of/IN
+  possible/JJ
+  ``/BACKTICK
+  irregularities/NNS
+  ''/QUOTE
+  in/IN
+  the/AT
+  hard-fought/JJ
+  primary/NN
+  which/WDT
+  was/BEDZ
+  won/VBN
+  by/IN
+  (GROUP Mayor-nominate/NN-TL Ivan/NP Allen/NP Jr./NP)
+  ./DOT)"""
 
         assert tree.pformat() == expected
