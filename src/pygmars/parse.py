@@ -99,8 +99,8 @@ from pygmars.tree import Tree as ParseTree
 class ParseString:
     """
     A ParseString is a string-based encoding of a particular parsing of a
-    sequence of Tokens. Internally, the ``ParseString`` class uses a tsring and
-    a list:
+    sequence of label from Tokens and Trees. This is used internally by the
+    Parser. The ``ParseString`` class uses a backing string and a list:
 
     - a string of Token or Tree labels that encode the parsing of the input
     tokens. This is the string to which the Rule's pattern regular expression
@@ -112,19 +112,15 @@ class ParseString:
 
     - a parallel and backing list of Tokens and Trees called "pieces".
 
-    ``ParseString`` are created from a Tokens list (built from lexed texts).
-    Initially, nothing is parsed and tokens are not grouped under a label.
+    ``ParseString`` are created from a Tree of Tokens and Trees or list of
+    Tokens (built from lexed texts). Initially when starting from a list of
+    Tokens, nothing is parsed and Tokens are not grouped in a Tree.
 
-    The parsing of a ``ParseString`` is modified with the ``apply_transform()``
-    method, which uses the Rule regular expression to transform the string
-    representation.  These transformations can only add and remove braces;
-    they should *not* modify the sequence of angle-bracket delimited labels.
-
-    :cvar IN_PATTERN: A zero-width regexp pattern string that will only match
-        positions that are inside groups.
-
-    :cvar BETWEEN_PATTERN: A zero-width regexp pattern string that will only
-        match positions that are between groups.
+    The ``ParseString.apply_transform()`` method uses the Rule label pattern
+    "transformer" to transform the backing string and mark which part of that
+    string match the Rule pattern. This marking is then used to return a new
+    parse Tree from the backing pieces.
+    
     """
     # Anything that's not a delimiter such as <> or {}
     LABEL_CHARS = r"[^\{\}<>]"
@@ -144,13 +140,12 @@ class ParseString:
 
     def validate(self, s):
         """
-        Validate that the string ``s`` corresponds to a parsed version of ``_pieces``.
+        Validate that the string ``s`` corresponds to a parsed version of
+        ``_pieces``.
 
-        If ``verify_tags`` is True, check whether the individual tags should be
-        checked.  If this is False, ``_verify`` will check to make sure that
-        ``_str`` encodes a parsed version of a list of tokens.  If this is
-        true, then ``_verify`` will check to make sure that the tags in
-        ``_str`` match those in ``_pieces``.
+        Check individual tags and that the backing parse string encodes a parsed
+        version of a list of tokens. And that the labels match those in
+        ``_pieces``.
 
         :raise ValueError: if the internal string representation of
             this ``ParseString`` is invalid or not consistent with its _pieces.
@@ -219,8 +214,9 @@ class ParseString:
         transformation may not result in improper bracketing.  Note, in
         particular, that bracketing may not be nested.
 
-        ``transformer`` is a callable that accepts a string and returns a string
-        Raise ValueError if this transformation generates an invalid ParseString.
+        ``transformer`` is a callable that accepts a string and returns a
+        string. Raise ValueError if this transformation generates an invalid
+        ParseString.
         """
         # Do the actual substitution
         s = transformer(self._parse_string)
