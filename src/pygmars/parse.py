@@ -209,7 +209,20 @@ class ParseString:
         # Use this alternating list to create the ParseTree.
         pieces = []
         index = 0
-        piece_in_group = 0
+
+        # We track if we have a match or not based on the curly braces.
+        # The "pieces_splitter" will yield an alternation such that the first
+        # item is not part of a match (and may be empty) and the next item is in
+        # a match and the next not in a group and so on.
+        # For instance:
+        # >>> pieces_splitter("{<for>}<bar>")
+        # ['',        '<for>', '<bar>']
+        #  not match, match,   not match
+        # >>> pieces_splitter("ads{<for>}{<bar>}")
+        # ['ads',     '<for>', '',        '<bar>',  '']
+        #  not match, match,   not match, match,    match
+
+        matched = False
         for piece in pieces_splitter(self._parse_string):
 
             # Find the list of tokens contained in this piece.
@@ -217,13 +230,13 @@ class ParseString:
             subsequence = self._pieces[index: index + length]
 
             # Add this list of tokens to our pieces.
-            if piece_in_group:
+            if matched:
                 pieces.append(ParseTree(label, subsequence))
             else:
                 pieces.extend(subsequence)
 
             index += length
-            piece_in_group = not piece_in_group
+            matched = not matched
 
         return ParseTree(self._root_label, pieces)
 
