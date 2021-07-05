@@ -61,7 +61,7 @@ class TestRule(unittest.TestCase):
             ('.', 'DOT'),
         ]
         tokens = list(Token.from_value_label_tuples(value_labels))
-        cp = Parser('GROUP: {<N.*>{4,}}')
+        cp = Parser('GROUP: <N.*>{4,}')
         tree = cp.parse(tokens)
         expected = """(ROOT
   The/AT

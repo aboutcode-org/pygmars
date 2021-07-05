@@ -79,23 +79,22 @@ Other values generate an error:
       . . .
     AttributeError: 'str' object has no attribute 'label'
 
-The `str()` for a chunk string adds spaces to it, which makes it line
-up with `str()` output for other chunk strings over the same
+The `str()` for a parse string adds spaces to it, which makes it line
+up with `str()` output for other parse strings over the same
 underlying input.
 
     >>> cs = ParseString(t1)
     >>> print(cs)
      <T0>  <T1>  <T2>  <T3>  <T4>  <T5>  <T6>  <T7>  <T8>  <T9>
     >>> cs.apply_transform(partial(re.compile('<T3>').sub, '{<T3>}'))
-
     >>> print(cs)
      <T0>  <T1>  <T2> {<T3>} <T4>  <T5>  <T6>  <T7>  <T8>  <T9>
 
-The `_verify()` method makes sure that our transforms don't corrupt
-the chunk string.  By setting debug_level=2, `_verify()` will be
+The `validate()` method makes sure that the parsing does not corrupt
+the parse string.  By setting validate=True, `validate()` will be
 called at the end of every call to `apply_transform`.
 
-    >>> cs = ParseString(t1, debug_level=3)
+    >>> cs = ParseString(t1, validate=True)
 
     Tag not marked with <...>:
     >>> cs.apply_transform(partial(re.compile('<T3>').sub, 'T3'))
@@ -172,14 +171,16 @@ An exception is raise when parsing an empty tree:
 
 Parser
 ------------
+    >>> grammar = '''
+    ... NP: <DT>? <JJ>* <NN>* # NP
+    ... P: <IN>               # Preposition
+    ... V: <V.*>              # Verb
+    ... PP: <P> <NP>          # PP -> P NP
+    ... VP: <V> <NP|PP>*      # VP -> V (NP|PP)*
+    ... '''
 
-    >>> parser = Parser('''
-    ... NP: {<DT>? <JJ>* <NN>*} # NP
-    ... P: {<IN>}           # Preposition
-    ... V: {<V.*>}          # Verb
-    ... PP: {<P> <NP>}      # PP -> P NP
-    ... VP: {<V> <NP|PP>*}  # VP -> V (NP|PP)*
-    ... ''')
+
+    >>> parser = Parser(grammar)
     >>> print(repr(parser))
     <Parser with 5 rules>
     >>> print(parser)
@@ -190,7 +191,8 @@ Parser
     <Rule: <P> <NP> / PP # PP -> P NP>
     <Rule: <V> <NP|PP>* / VP # VP -> V (NP|PP)*>
 
-    >>> print(parser.parse(tokens, trace=True))
+    >>> parser = Parser(grammar, trace=True)
+    >>> print(parser.parse(tokens))
     # Input:
      <DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>
     # NP:
@@ -225,5 +227,5 @@ Illegal patterns give an error message:
     >>> print(Parser('X: {<foo>} {<bar>}'))
     Traceback (most recent call last):
       . . .
-    ValueError: Bad label pattern: '(<(foo)>)}{(<(bar)>)'
+    ValueError: Bad label pattern: '{(<(foo)>)}{(<(bar)>)}'
 """

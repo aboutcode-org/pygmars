@@ -110,7 +110,7 @@ class ParseString:
 
         {<DT><JJ><NN>}<VBN><IN>{<DT><NN>}{<DT><NN>}<VBD>
 
-    - a parallel and backing list of Tokens and Trees.
+    - a parallel and backing list of Tokens and Trees called "pieces".
 
     ``ParseString`` are created from a Tokens list (built from lexed texts).
     Initially, nothing is parsed and tokens are not grouped under a label.
@@ -120,18 +120,6 @@ class ParseString:
     representation.  These transformations can only add and remove braces;
     they should *not* modify the sequence of angle-bracket delimited labels.
 
-    :type _parse_string: str
-    :ivar _parse_string: The internal string representation of the text's
-        encoding.  This string representation contains a sequence of
-        angle-bracket delimited tags, with parsing indicated by
-        braces.  An example of this encoding is::
-
-            {<DT><JJ><NN>}<VBN><IN>{<DT><NN>}<.>{<DT><NN>}<VBD><.>
-
-    :type _pieces: list(tokens and groups)
-    :ivar _pieces: The tokens and groups encoded by this ``ParseString``.
-    :ivar _debug: The debug level.  See the constructor docs.
-
     :cvar IN_PATTERN: A zero-width regexp pattern string that will only match
         positions that are inside groups.
 
@@ -140,37 +128,21 @@ class ParseString:
     """
     # Anything that's not a delimiter such as <> or {}
     LABEL_CHARS = r"[^\{\}<>]"
+    LABEL = fr"(<{LABEL_CHARS}+>)"
 
-    LABEL = fr"(<{LABEL_CHARS}+?>)"
-
-    # (?= is a lookahead assertion:
-    # match and not "consume" anything that has no { and ends with }
-    IN_PATTERN = r"(?=[^\{]*\})"
-    # match and not "consume" anything that has no } and will return an opening {
-    BETWEEN_PATTERN = r"(?=[^\}]*(\{|$))"
-
-    # return a True'ish value if this pattern is valid
+    # return a True'ish value if the parse results look valid
     is_valid = re.compile(r"^(\{?%s\}?)*?$" % LABEL).match
 
-    def __init__(self, tree, debug_level=1):
+    def __init__(self, tree, validate=False):
         """
         Construct a new ``ParseString`` from a ``tree`` ParseTree of Tokens.
-
-        ``debug_level`` is the int level of debugging that should be applied to
-        transformations on the ``ParseString``.  The valid levels are:
-
-        - 0: no checks
-        - 1: full check on ``to_tree()`` calls
-        - 2: full check on ``to_tree()`` calls and quick check after each transformation.
-        - 3: full check on ``to_tree()`` calls and full check after each transformation.
         """
         self._root_label = tree.label
         self._pieces = tree[:]
-        labels = "><".join(tok.label for tok in self._pieces)
-        self._parse_string = f"<{labels}>"
-        self._debug = debug_level
+        self._parse_string = "".join(f"<{p.label}>" for p in self._pieces)
+        self._validate = validate
 
-    def _verify(self, s, verify_tags=False):
+    def validate(self, s):
         """
         Validate that the string ``s`` corresponds to a parsed version of ``_pieces``.
 
@@ -189,9 +161,6 @@ class ParseString:
         if not has_balanced_non_nested_curly_braces(s):
             raise ValueError(f"Invalid parse: unbalanced or nested curly braces:\n  {s}")
 
-        if verify_tags <= 0:
-            return
-
         tags1 = tag_splitter(s)[1:-1]
         tags2 = [piece.label for piece in self._pieces]
         if tags1 != tags2:
@@ -203,8 +172,8 @@ class ParseString:
         label. Raise a ValueError if a transformation creates an invalid
         ParseString.
         """
-        if self._debug > 0:
-            self._verify(self._parse_string, 1)
+        if self._validate:
+            self.validate(self._parse_string, 1)
 
         # Use this alternating list to create the ParseTree.
         pieces = []
@@ -262,8 +231,8 @@ class ParseString:
         s = s.replace("{}", "")
 
         # Make sure that the transformation was legal.
-        if self._debug > 1:
-            self._verify(s, self._debug - 2)
+        if self._validate:
+            self.validate(s)
 
         # Save the transformation.
         self._parse_string = s
@@ -364,7 +333,7 @@ def label_pattern_to_regex(label_pattern):
     - Whitespace in label patterns is ignored.  So
       ``'<DT> | <NN>'`` is equivalant to ``'<DT>|<NN>'``
 
-    - In label patterns, ``'.'`` is equivalant to ``'[^{}<>]'``; so
+    - In label patterns, ``'.'`` is equivalent to ``'[^{}<>]'``; so
       ``'<NN.*>'`` matches any single tag starting with ``'NN'``.
 
     In particular, ``label_pattern_to_regex`` performs the following
@@ -414,7 +383,6 @@ class Rule:
         label,
         description=None,
         root_label="ROOT",
-        trace=0,
     ):
         """
         Construct a new ``Rule`` from a ``pattern`` string for a ``label``
@@ -422,19 +390,14 @@ class Rule:
 
         ``root_label`` is the label value used for the top/root node of the tree
         structure.
-
-        ``trace`` is the level of tracing when parsing.  ``0`` will generate no
-        tracing output; ``1`` will generate normal tracing output; and ``2`` or
-        higher will generate verbose tracing output.
         """
         self.pattern = pattern
         self.label = label
         self.description = description
         self._root_label = root_label
-        self._trace = trace
 
         regexp = label_pattern_to_regex(pattern)
-        regexp = fr"(?P<group>{regexp}){ParseString.BETWEEN_PATTERN}"
+        regexp = fr"(?P<group>{regexp})"
         # the replacement wraps matched tokens in curly braces
         self._repl = "{\\g<group>}"
         self._transformer = partial(re.compile(regexp).sub, self._repl)
@@ -452,7 +415,7 @@ class Rule:
         if self.label != as_token_label(self.label):
             raise Exception(f"Illegal Rule label: {self.label}")
 
-    def parse(self, tree, trace=None):
+    def parse(self, tree, trace=0):
         """
         Parse the ``tree`` ParseTree and return a new ParseTree that encodes the
         parsing in groups of a given Token sequence.  The set of nodes
@@ -472,10 +435,6 @@ class Rule:
             tree.label
         except AttributeError:
             tree = ParseTree(self._root_label, tree)
-
-        # Use the default trace value?
-        if trace is None:
-            trace = self._trace
 
         parse_string = ParseString(tree)
 
@@ -503,7 +462,7 @@ class Rule:
     __str__ = __repr__
 
     @classmethod
-    def from_string(cls, string, root_label="ROOT", trace=0):
+    def from_string(cls, string, root_label="ROOT"):
         """
         Create a Rule from a grammar rule ``string`` in this format::
 
@@ -514,7 +473,7 @@ class Rule:
         the rule's description:
 
         >>> from pygmars.parse import Rule
-        >>> Rule.from_string('FOO: {<DT>?<NN.*>+}')
+        >>> Rule.from_string('FOO: <DT>?<NN.*>+')
         <Rule: <DT>?<NN.*>+ / FOO>
         """
         label, _, pattern = string.partition(":")
@@ -522,12 +481,6 @@ class Rule:
         label = label.strip()
         pattern = pattern.strip()
         description = description.strip()
-
-        if not pattern.startswith("{") or not pattern.endswith("}"):
-            raise ValueError(
-                f"Illegal pattern: {pattern}: notenclosed in curly braces.")
-
-        pattern = pattern[1:-1]
 
         if not pattern:
             raise ValueError(f"Empty pattern: {string}")
@@ -540,33 +493,28 @@ class Rule:
             label=label,
             description=description,
             root_label=root_label,
-            trace=trace,
         )
 
     @classmethod
-    def from_grammar(cls, grammar, root_label="ROOT", trace=0):
+    def from_grammar(cls, grammar, root_label="ROOT"):
         """
         Yield Rules from ``grammar`` string.
         Raise Exceptions on errors.
 
-        ``trace`` is the level of tracing to use when parsing a text.  ``0``
-        will generate no tracing output; ``1`` will generate normal tracing
-        output; and ``2`` or higher will generate verbose tracing output.
-
         A grammar is a collection of Rules that can be built from a string. A
         grammar contains one or more rule (one rule per line) in this form::
 
-         NP: {<DT|JJ>}          # determiners and adjectives
+         NP: <DT|JJ>          # determiners and adjectives
 
-        Here NP is a label and {<DT|JJ>} is the pattern and the comment is used
-        as a description.
+        Here NP is a label and "<DT|JJ>" is the pattern. The remainder after #
+        is used as a description.
         """
         for line in grammar.splitlines(False):
             line = line.strip()
             if not line or line.startswith("#"):
                 # Skip blank & comment-only lines
                 continue
-            yield cls.from_string(string=line, root_label=root_label, trace=trace)
+            yield cls.from_string(string=line, root_label=root_label)
 
 
 class Parser:
@@ -604,27 +552,19 @@ class Parser:
         output; and ``2`` or higher will generate verbose tracing output.
         """
         self._grammar = grammar
-        self.rules = list(Rule.from_grammar(grammar, root_label, trace))
+        self.rules = list(Rule.from_grammar(grammar, root_label))
         self._root_label = root_label
         self._loop = loop
         self._trace = trace
 
-    def parse(self, tree, trace=None):
+    def parse(self, tree):
         """
         Apply this parser to the ``tree`` ParseTree and return a ParseTree.
         The tree is modified in place and returned.
-
-        ``trace`` is the level of tracing to use when parsing a text.  ``0``
-        will generate no tracing output; ``1`` will generate normal tracing
-        output; and ``2`` or higher will generate verbose tracing output.
-        This value overrides the trace level given to the constructor.
         """
-        if trace is None:
-            trace = self._trace
-
         for _ in range(self._loop):
             for parse_rule in self.rules:
-                tree = parse_rule.parse(tree, trace=trace)
+                tree = parse_rule.parse(tree, trace=self._trace)
         return tree
 
     def __repr__(self):
