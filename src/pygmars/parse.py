@@ -3,16 +3,17 @@
 # Copyright (C) 2001-2020 NLTK Project
 
 """
-This module defines  ``Parser`` which is a regular-expression based parser to
-parse list of recognized Tokens in a parse tree where each node has a label.
+
+This module defines  ``Parser`` which is a regular expression-based parser to
+parse list of Tokens in a parse tree where each node has a label.
 
 This is originally based on NLTK POS chunk parsing used to identify non-
 overlapping linguistic groups (such as base noun phrases) in unrestricted text.
 
-This parsing can identify and group sequences of tokens in a shallow tree called
-a ParseTree. A ParseTree is a tree containing Tokens and groups, where each
-group is a subtree containing only Tokens.  For example, the ParseTree for base
-noun phrase groups in the sentence "I saw the big dog on the hill" is::
+This parsing can identify and group sequences of Tokens in a shallow parse Tree.
+A parse Tree is a tree containing Tokens and Trees, where each sub-Tree contains
+only Tokens.  For example, the parse Tree for base noun phrase groups in the
+sentence "I saw the big dog on the hill" is::
 
   (SENTENCE:
     (NP: <I>)
@@ -21,19 +22,16 @@ noun phrase groups in the sentence "I saw the big dog on the hill" is::
     <on>
     (NP: <the> <hill>))
 
-To convert a ParseTree back to a list of tokens use the ParseTree's ``leaves()``
-method.
-
 
 Rule
-=================
+======
 
 ``Rule`` uses regular-expressions over Token and Tree labels to parse and group
 tokens and trees. The ``parse()`` method constructs a ``ParseString`` that
 encodes a particular group of tokens.  Initially, nothing is grouped. ``Rule``
 then applies its ``pattern`` substitution to the ``ParseString`` to modify the
 token grouping that it encodes. Finally, the ``ParseString`` is transformed back
-and returned as a ParseTree.
+and returned as a parse Tree.
 
 A ``Rule`` is used to parse a sequence of Tokens and assign a label to a sub-
 sequence using a regular expression. Multiple ``Rule``s form a grammar used by a
@@ -93,7 +91,77 @@ import re
 from functools import partial
 
 from pygmars import as_token_label
-from pygmars.tree import Tree as ParseTree
+from pygmars.tree import Tree
+
+
+class Parser:
+    """
+    Parser is a grammar-based parser that uses a grammar which is a list of Rule
+    with patterns that are specialized regular expression for over Token or Tree
+    labels. Internally the parsing of a Token and Tree sequence is encoded using
+    a ``ParseString``, and each Rule pattern acts by modifying the grouping and
+    parsing in the ``ParseString``. Rule patterns are implemented using regular
+    expression substitution.
+
+    The Rule patterns of a grammar are executed in sequence.  An earlier pattern
+    may introduce a parse boundary that prevents a later pattern from matching.
+    Sometimes an individual pattern will match on multiple, overlapping extents
+    of the input.  As with regular expression substitution, the parser will
+    identify the first match possible, then continue looking for all other
+    following matches.
+
+    The maximum depth of a parse tree created by a parser is the same as the
+    number of Rules in the grammar.
+
+    When tracing is turned on, the comment portion of a line is displayed each
+    time the corresponding pattern is applied.
+    """
+
+    def __init__(self, grammar, root_label="ROOT", loop=1, trace=0, validate=False):
+        """
+        Create a new Parser from a ``grammar`` string and a ``root_label``.
+
+        ``loop`` is the number of times to run through all the patterns (as the
+        evaluation of Rules is sequential and     recursive).
+
+        ``trace`` is the level of tracing to use when parsing a text.  ``0``
+        will generate no tracing output; ``1`` will generate normal tracing
+        output; and ``2`` or higher will generate verbose tracing output.
+
+        If ``validate`` is True perform extra consistency checks and validation
+        on rules and rule parse results.
+        """
+        self._grammar = grammar
+        self.rules = list(Rule.from_grammar(grammar, root_label, validate=validate))
+        self._root_label = root_label
+        self._loop = loop
+        self._trace = trace
+        self._validate = validate
+
+    def parse(self, tree):
+        """
+        Apply this parser to the ``tree`` parse Tree and return a parse Tree.
+        The tree is modified in place and returned.
+        """
+        if not tree:
+            raise Exception(f"Cannot parse empty tree: {tree!r}")
+
+        if not isinstance(tree, Tree):
+            tree = Tree(self._root_label, tree)
+
+        trace = self._trace
+
+        for _ in range(self._loop):
+            for parse_rule in self.rules:
+                tree = parse_rule.parse(tree, trace=trace)
+        return tree
+
+    def __repr__(self):
+        return f"<Parser with {len(self.rules)} rules>"
+
+    def __str__(self):
+        rules = "\n".join(map(str, self.rules))
+        return f"Parser with  {len(self.rules)} rules:\n{rules}"
 
 
 class ParseString:
@@ -120,7 +188,7 @@ class ParseString:
     "transformer" to transform the backing string and mark which part of that
     string match the Rule pattern. This marking is then used to return a new
     parse Tree from the backing pieces.
-    
+
     """
     # Anything that's not a delimiter such as <> or {}
     LABEL_CHARS = r"[^\{\}<>]"
@@ -131,11 +199,11 @@ class ParseString:
 
     def __init__(self, tree, validate=False):
         """
-        Construct a new ``ParseString`` from a ``tree`` ParseTree of Tokens.
+        Construct a new ``ParseString`` from a ``tree`` parse Tree of Tokens.
         """
         self._root_label = tree.label
-        self._pieces = tree[:]
-        self._parse_string = "".join(f"<{p.label}>" for p in self._pieces)
+        self._pieces = tree
+        self._parse_string = "".join(f"<{p.label}>" for p in tree)
         self._validate = validate
 
     def validate(self, s):
@@ -163,21 +231,18 @@ class ParseString:
 
     def to_tree(self, label="GROUP", pieces_splitter=re.compile(r"[{}]").split):
         """
-        Return a ParseTree for this ``ParseString`` using ``label`` as the root
+        Return a parse Tree for this ``ParseString`` using ``label`` as the root
         label. Raise a ValueError if a transformation creates an invalid
         ParseString.
         """
         if self._validate:
-            self.validate(self._parse_string, 1)
+            self.validate(self._parse_string)
 
-        # Use this alternating list to create the ParseTree.
-        pieces = []
-        index = 0
-
+        # Use this alternating list to create the parse Tree.
         # We track if we have a match or not based on the curly braces.
         # The "pieces_splitter" will yield an alternation such that the first
         # item is not part of a match (and may be empty) and the next item is in
-        # a match and the next not in a group and so on.
+        # a match and the next not in a match and so on.
         # For instance:
         # >>> pieces_splitter("{<for>}<bar>")
         # ['',        '<for>', '<bar>']
@@ -186,23 +251,28 @@ class ParseString:
         # ['ads',     '<for>', '',        '<bar>',  '']
         #  not match, match,   not match, match,    match
 
+        pieces = self._pieces
+
+        parse_tree = Tree(self._root_label, [])
+        index = 0
         matched = False
+
         for piece in pieces_splitter(self._parse_string):
 
             # Find the list of tokens contained in this piece.
             length = piece.count("<")
-            subsequence = self._pieces[index: index + length]
+            subsequence = pieces[index:index + length]
 
             # Add this list of tokens to our pieces.
             if matched:
-                pieces.append(ParseTree(label, subsequence))
+                parse_tree.append(Tree(label, subsequence))
             else:
-                pieces.extend(subsequence)
+                parse_tree.extend(subsequence)
 
             index += length
             matched = not matched
 
-        return ParseTree(self._root_label, pieces)
+        return parse_tree
 
     def apply_transform(self, transformer):
         """
@@ -353,7 +423,7 @@ def label_pattern_to_regex(label_pattern):
     # Clean up the regular expression
     label_pattern = (
         remove_spaces("", label_pattern)
-        .replace("<", "(<(")
+        .replace("<", "(?:<(?:")
         .replace(">", ")>)")
     )
 
@@ -379,6 +449,7 @@ class Rule:
         label,
         description=None,
         root_label="ROOT",
+        validate=False,
     ):
         """
         Construct a new ``Rule`` from a ``pattern`` string for a ``label``
@@ -397,6 +468,9 @@ class Rule:
         # the replacement wraps matched tokens in curly braces
         self._repl = "{\\g<group>}"
         self._transformer = partial(re.compile(regexp).sub, self._repl)
+        self._validate = validate
+        if validate:
+            self.validate()
 
     def validate(self):
         """
@@ -413,8 +487,8 @@ class Rule:
 
     def parse(self, tree, trace=0):
         """
-        Parse the ``tree`` ParseTree and return a new ParseTree that encodes the
-        parsing in groups of a given Token sequence.  The set of nodes
+        Parse the ``tree`` parse Tree and return a new parse Tree that encodes
+        the parsing in groups of a given Token sequence.  The set of nodes
         identified in the tree depends on the pattern of this ``Rule``.
 
         ``trace`` is the level of tracing when parsing.  ``0`` will generate no
@@ -430,23 +504,24 @@ class Rule:
         try:
             tree.label
         except AttributeError:
-            tree = ParseTree(self._root_label, tree)
+            tree = Tree(self._root_label, tree)
 
-        parse_string = ParseString(tree)
+        parse_string = ParseString(tree, validate=self._validate)
 
-        # Apply the sequence of rules to the ParseString.
         verbose = trace > 1
         if trace:
             print("# Input:")
-            print(parse_string)
+            print("  ", tree.pformat(margin=400))
+            print("  ", parse_string)
 
+        # Apply this rule to the ParseString.
         parse_string.apply_transform(self._transformer)
 
         if verbose:
             print("#", self.description + " (" + repr(self.pattern) + "):")
         elif trace:
             print("#", self.description + ":")
-            print(parse_string)
+            print("  ", parse_string)
 
         return parse_string.to_tree(self.label)
 
@@ -458,15 +533,15 @@ class Rule:
     __str__ = __repr__
 
     @classmethod
-    def from_string(cls, string, root_label="ROOT"):
+    def from_string(cls, string, root_label="ROOT", validate=False):
         """
         Create a Rule from a grammar rule ``string`` in this format::
 
           label: {pattern} # description
 
-        Where ``pattern`` is a regular expression for the rule.  Any
-        text following the comment marker (``#``) will be used as
-        the rule's description:
+        Where ``pattern`` is a regular expression for the rule.  Any text
+        following the comment marker (``#``) will be used as the rule's
+        description:
 
         >>> from pygmars.parse import Rule
         >>> Rule.from_string('FOO: <DT>?<NN.*>+')
@@ -489,13 +564,13 @@ class Rule:
             label=label,
             description=description,
             root_label=root_label,
+            validate=validate,
         )
 
     @classmethod
-    def from_grammar(cls, grammar, root_label="ROOT"):
+    def from_grammar(cls, grammar, root_label="ROOT", validate=False):
         """
-        Yield Rules from ``grammar`` string.
-        Raise Exceptions on errors.
+        Yield Rules from ``grammar`` string. Raise Exceptions on errors.
 
         A grammar is a collection of Rules that can be built from a string. A
         grammar contains one or more rule (one rule per line) in this form::
@@ -510,62 +585,8 @@ class Rule:
             if not line or line.startswith("#"):
                 # Skip blank & comment-only lines
                 continue
-            yield cls.from_string(string=line, root_label=root_label)
-
-
-class Parser:
-    """
-    Parser is a grammar-based parser that uses a grammar which is a list of Rule
-    with patterns that are specialized regular expression for over Token or Tree
-    labels. Internally the parsing of a Token sequence is encoded using a
-    ``ParseString``, and each Rule pattern acts by modifying the grouping and
-    parsing in the ``ParseString``. Rule patterns are implemented using regular
-    expression substitution.
-
-    The Rule patterns of a grammar are executed in sequence.  An earlier pattern
-    may introduce a parse boundary that prevents a later pattern from matching.
-    Sometimes an individual pattern will match on multiple, overlapping extents
-    of the input.  As with regular expression substitution, the parser will
-    identify the first match possible, then continue looking for all other
-    following matches.
-
-    The maximum depth of a parse tree created by a parser is the same as the
-    number of Rules in the grammar.
-
-    When tracing is turned on, the comment portion of a line is displayed each
-    time the corresponding pattern is applied.
-    """
-
-    def __init__(self, grammar, root_label="ROOT", loop=1, trace=0):
-        """
-        Create a new Parser from a ``grammar`` string and a ``root_label``.
-
-        ``loop`` is the number of times to run through all the patterns (as the
-        evaluation of Rules is sequential and not recursive).
-
-        ``trace`` is the level of tracing to use when parsing a text.  ``0``
-        will generate no tracing output; ``1`` will generate normal tracing
-        output; and ``2`` or higher will generate verbose tracing output.
-        """
-        self._grammar = grammar
-        self.rules = list(Rule.from_grammar(grammar, root_label))
-        self._root_label = root_label
-        self._loop = loop
-        self._trace = trace
-
-    def parse(self, tree):
-        """
-        Apply this parser to the ``tree`` ParseTree and return a ParseTree.
-        The tree is modified in place and returned.
-        """
-        for _ in range(self._loop):
-            for parse_rule in self.rules:
-                tree = parse_rule.parse(tree, trace=self._trace)
-        return tree
-
-    def __repr__(self):
-        return f"<Parser with {len(self.rules)} rules>"
-
-    def __str__(self):
-        rules = "\n".join(map(str, self.rules))
-        return f"Parser with  {len(self.rules)} rules:\n{rules}"
+            yield cls.from_string(
+                string=line,
+                root_label=root_label,
+                validate=validate,
+            )

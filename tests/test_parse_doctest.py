@@ -24,26 +24,16 @@
     >>> tag_pattern = "<DT>?<JJ>*<NN.*>"
     >>> regexp_pattern = label_pattern_to_regex(tag_pattern)
     >>> regexp_pattern
-    '(<(DT)>)?(<(JJ)>)*(<(NN[^\\\\{\\\\}<>]*)>)'
+    '(?:<(?:DT)>)?(?:<(?:JJ)>)*(?:<(?:NN[^\\\\{\\\\}<>]*)>)'
 
-Create a Rule:
+Create a Rule and parse something:
 
     >>> pattern = "<.*>+"
     >>> description = "Parse everything"
     >>> rule = Rule(pattern, label='NP', description=description)
     >>> parsed = rule.parse(tokens)
-    >>> print(parsed)
-    (ROOT
-      (NP
-        The/DT
-        cat/NN
-        sat/VBD
-        on/IN
-        the/DT
-        mat/NN
-        the/DT
-        dog/NN
-        chewed/VBD))
+    >>> parsed.pprint(margin=100)
+    (ROOT (NP The/DT cat/NN sat/VBD on/IN the/DT mat/NN the/DT dog/NN chewed/VBD))
 
 Printing Rule:
 
@@ -192,28 +182,33 @@ Parser
     <Rule: <V> <NP|PP>* / VP # VP -> V (NP|PP)*>
 
     >>> parser = Parser(grammar, trace=True)
-    >>> print(parser.parse(tokens))
+    >>> print("parse tree:", parser.parse(tokens))
     # Input:
-     <DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>
+       (ROOT The/DT cat/NN sat/VBD on/IN the/DT mat/NN the/DT dog/NN chewed/VBD)
+        <DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>
     # NP:
-    {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>
+       {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>
     # Input:
-     <NP>  <VBD>  <IN>  <NP>  <NP>  <VBD>
+       (ROOT (NP The/DT cat/NN) sat/VBD on/IN (NP the/DT mat/NN) (NP the/DT dog/NN) chewed/VBD)
+        <NP>  <VBD>  <IN>  <NP>  <NP>  <VBD>
     # Preposition:
-     <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>
+        <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>
     # Input:
-     <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>
+       (ROOT (NP The/DT cat/NN) sat/VBD (P on/IN) (NP the/DT mat/NN) (NP the/DT dog/NN) chewed/VBD)
+        <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>
     # Verb:
-     <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
+        <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
     # Input:
-     <NP>  <V>  <P>  <NP>  <NP>  <V>
+       (ROOT (NP The/DT cat/NN) (V sat/VBD) (P on/IN) (NP the/DT mat/NN) (NP the/DT dog/NN) (V chewed/VBD))
+        <NP>  <V>  <P>  <NP>  <NP>  <V>
     # PP -> P NP:
-     <NP>  <V> {<P>  <NP>} <NP>  <V>
+        <NP>  <V> {<P>  <NP>} <NP>  <V>
     # Input:
-     <NP>  <V>  <PP>  <NP>  <V>
+       (ROOT (NP The/DT cat/NN) (V sat/VBD) (PP (P on/IN) (NP the/DT mat/NN)) (NP the/DT dog/NN) (V chewed/VBD))
+        <NP>  <V>  <PP>  <NP>  <V>
     # VP -> V (NP|PP)*:
-     <NP> {<V>  <PP>  <NP>}{<V>}
-    (ROOT
+        <NP> {<V>  <PP>  <NP>}{<V>}
+    parse tree: (ROOT
       (NP The/DT cat/NN)
       (VP
         (V sat/VBD)
@@ -227,5 +222,5 @@ Illegal patterns give an error message:
     >>> print(Parser('X: {<foo>} {<bar>}'))
     Traceback (most recent call last):
       . . .
-    ValueError: Bad label pattern: '{(<(foo)>)}{(<(bar)>)}'
+    ValueError: Bad label pattern: '{(?:<(?:foo)>)}{(?:<(?:bar)>)}'
 """
