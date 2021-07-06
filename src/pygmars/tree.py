@@ -70,18 +70,6 @@ class Tree(list):
     example, syntax trees use this label to specify phrase tags, such as "NP"
     and "VP".
 
-    Several Tree methods use "tree positions" to specify children or descendants
-    of a tree.  Tree positions are defined as follows:
-
-      - The tree position *i* specifies a Tree's *i*\ th child.
-      - The tree position ``()`` specifies the Tree itself.
-      - If *p* is the tree position of descendant *d*, then
-        *p+i* specifies the *i*\ th child of *d*.
-
-    I.e., every tree position is either a single index *i*,
-    specifying ``tree[i]``; or a sequence *i1, i2, ..., iN*,
-    specifying ``tree[i1][i2]...[iN]``.
-
     Construct a new tree:
 
     - ``Tree(label, children)`` constructs a new tree with the
@@ -93,9 +81,8 @@ class Tree(list):
 
     def __init__(self, label, children):
         if not label:
-            raise TypeError(
-                f"Expected a label value: {label!r}"
-            )
+            raise TypeError(f"Expected a label value: {label!r}")
+
         if not isinstance(children, list):
             raise TypeError(f"Children should be a list: {children!r}")
 
@@ -159,7 +146,7 @@ class Tree(list):
     def from_string(
         cls,
         s,
-        brackets="()",
+        brackets=r"()",
         read_node=None,
         read_leaf=None,
         node_pattern=None,
@@ -189,9 +176,6 @@ class Tree(list):
 
                read_node(str) -> value
 
-            For example, these functions could be used to process nodes
-            and leaves whose values should be some type other than
-            string (such as ``FeatStruct``).
             Note that by default, node strings and leaf strings are
             delimited by whitespace and brackets; to override this
             default, use the ``node_pattern`` and ``leaf_pattern``
