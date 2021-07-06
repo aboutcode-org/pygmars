@@ -74,7 +74,20 @@ class Token:
         tuples of token (value, label).
         """
         for pos, (value, label) in enumerate(value_labels):
-                yield cls(value, label=label, pos=pos)
+            yield cls(value, label=label, pos=pos)
+
+    @classmethod
+    def from_pygments_tokens(cls, pygtokens):
+        """
+        Return an iterable of Tokens built from a ``pygtokens`` iterable of
+        tuples (pos, Pygments token, string value) as produced by Pygments
+        lexers. The Pygments Token types are normalized to token lanel, all
+        uppercase and dash-separated.
+        """
+        lineno = 1
+        for pos, label, value in pygtokens:
+            yield cls(value, label=label, pos=pos, start_line=lineno)
+            lineno += value.count("\n")
 
 
 only_wordchars = re.compile(r'[^A-Z0-9\-]').sub
