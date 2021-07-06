@@ -559,6 +559,9 @@ class Rule:
         if not label:
             raise ValueError(f"Missing rule label: {string}")
 
+        if pattern.startswith("{") and pattern.endswith("}"):
+            pattern = pattern[1:-1]
+
         return Rule(
             pattern=pattern,
             label=label,

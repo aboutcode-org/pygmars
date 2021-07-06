@@ -222,5 +222,5 @@ Illegal patterns give an error message:
     >>> print(Parser('X: {<foo>} {<bar>}'))
     Traceback (most recent call last):
       . . .
-    ValueError: Bad label pattern: '{(?:<(?:foo)>)}{(?:<(?:bar)>)}'
+    ValueError: Bad label pattern: '(?:<(?:foo)>)}{(?:<(?:bar)>)'
 """
