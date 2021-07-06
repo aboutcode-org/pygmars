@@ -1,9 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) nexB Inc. and others
+# Copyright (C) 2001-2020 NLTK Project
+# See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
+# See https://github.com/nexB/pygmars for support or download.
+# See https://aboutcode.org for more information about nexB OSS projects.
+
 # Originally based on: Natural Language Toolkit
 # substantially modified for use in ScanCode-toolkit
 #
 # Natural Language Toolkit (NLTK)
-# Copyright (C) 2001-2020 NLTK Project
-# SPDX-License-Identifier: Apache-2.0
 # URL: <http://nltk.org/>
 
 """
