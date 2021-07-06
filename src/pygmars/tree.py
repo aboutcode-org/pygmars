@@ -86,55 +86,21 @@ class Tree(list):
 
     - ``Tree(label, children)`` constructs a new tree with the
         specified label and list of children.
+
+    NOTE: Not all list method are implemented. In particular comparisons
+    methods, deletion and many more.
     """
 
-    def __init__(self, label, children=None):
-        if children is None:
+    def __init__(self, label, children):
+        if not label:
             raise TypeError(
-                f"{type(self).__name__}: Expected a label value and child list "
+                f"Expected a label value: {label!r}"
             )
-        elif isinstance(children, str):
-            raise TypeError(
-                f"{type(self).__name__}() children should be a list, not a string"
-            )
+        if not isinstance(children, list):
+            raise TypeError(f"Children should be a list: {children!r}")
 
         list.__init__(self, children)
         self.label = label
-
-    def __eq__(self, other):
-        return (
-            self.__class__ is other.__class__
-            and self.label == other.label
-            and list(self) == list(other)
-        )
-
-    def __lt__(self, other):
-        if not isinstance(other, Tree):
-            # Sometimes children can be pure strings,
-            # so we need to be able to compare with non-trees:
-            return self.__class__.__name__ < other.__class__.__name__
-        elif self.__class__ is other.__class__:
-            return (self.label, list(self)) < (other._label, list(other))
-        else:
-            return self.__class__.__name__ < other.__class__.__name__
-
-    # @total_ordering doesn't work here, since the class inherits from a builtin class
-    __ne__ = lambda self, other: not self == other
-    __gt__ = lambda self, other: not (self < other or self == other)
-    __le__ = lambda self, other: self < other or self == other
-    __ge__ = lambda self, other: not self < other
-
-    def __mul__(self, v):
-        raise TypeError("Tree does not support multiplication")
-
-    def __rmul__(self, v):
-        raise TypeError("Tree does not support multiplication")
-
-    def __add__(self, v):
-        raise TypeError("Tree does not support addition")
-
-    def __radd__(self, v):
-        raise TypeError("Tree does not support addition")
 
     def __getitem__(self, index):
         if isinstance(index, (int, slice)):
@@ -168,22 +134,6 @@ class Tree(list):
                 % (type(self).__name__, type(index).__name__)
             )
 
-    def __delitem__(self, index):
-        if isinstance(index, (int, slice)):
-            return list.__delitem__(self, index)
-        elif isinstance(index, (list, tuple)):
-            if len(index) == 0:
-                raise IndexError("The tree position () may not be deleted.")
-            elif len(index) == 1:
-                del self[index[0]]
-            else:
-                del self[index[0]][index[1:]]
-        else:
-            raise TypeError(
-                "%s indices must be integers, not %s"
-                % (type(self).__name__, type(index).__name__)
-            )
-
     def leaves(self):
         """
         Return the leaves of the tree without their labels
@@ -204,18 +154,6 @@ class Tree(list):
             else:
                 leaves.append(child)
         return leaves
-
-    def flatten(self):
-        """
-        Return a flat version of the tree, with all non-root non-terminals
-        removed. This is a tree consisting of the tree root connected directly
-        to its leaves, omitting all intervening non-terminal nodes.
-
-        >>> t = Tree.from_string("(S (NP (D the) (N dog)) (VP (V chased) (NP (D the) (N cat))))")
-        >>> print(t.flatten())
-        (S the dog chased the cat)
-        """
-        return Tree(self.label, self.leaves())
 
     @classmethod
     def from_string(
@@ -375,7 +313,7 @@ class Tree(list):
         """
         print(self.pformat(**kwargs))
 
-    def pformat(self, margin=70, indent=0, nodesep="", parens="()", quotes=False):
+    def pformat(self, margin=70, indent=0):
         """
         :return: A pretty-printed string representation of this tree.
         :rtype: str
@@ -385,65 +323,50 @@ class Tree(list):
             begins.  This number is used to decide how far to indent
             subsequent lines.
         :type indent: int
-        :param nodesep: A string that is used to separate the node
-            from the children.  E.g., the default value ``':'`` gives
-            trees like ``(S: (NP: I) (VP: (V: saw) (NP: it)))``.
         """
 
         # Try writing it on one line.
-        s = self._pformat_flat(nodesep, parens, quotes)
+        s = self._pformat_flat()
         if len(s) + indent < margin:
             return s
 
         # If it doesn't fit on one line, then write it on multi-lines.
-        if isinstance(self.label, str):
-            s = "%s%s%s" % (parens[0], self.label, nodesep)
-        else:
-            s = "%s%s%s" % (parens[0], repr(self.label), nodesep)
+        label = self.label
+        if not isinstance(label, str):
+            label = repr(label)
+        s = f"({label}"
+
+        twodents = indent + 2
+
         for child in self:
             if isinstance(child, Tree):
-                s += (
-                    "\n"
-                    +" " * (indent + 2)
-                    +child.pformat(margin, indent + 2, nodesep, parens, quotes)
-                )
+                s += ("\n" + " " * twodents + child.pformat(margin, twodents))
             elif isinstance(child, (tuple, list)):
-                s += "\n" + " " * (indent + 2) + "/".join(child)
-            elif isinstance(child, str) and not quotes:
-                s += "\n" + " " * (indent + 2) + "%s" % child
+                s += "\n" + (" " * twodents) + "/".join(child)
+            elif isinstance(child, str):
+                s += "\n" + (" " * twodents) + child
             else:
-                s += "\n" + " " * (indent + 2) + repr(child)
-        return s + parens[1]
+                s += "\n" + (" " * twodents) + repr(child)
+        return s + ")"
 
-    def _pformat_flat(self, nodesep, parens, quotes):
+    def _pformat_flat(self):
         childstrs = []
         for child in self:
             if isinstance(child, Tree):
-                childstrs.append(child._pformat_flat(nodesep, parens, quotes))
+                childstrs.append(child._pformat_flat())
             elif isinstance(child, tuple):
                 childstrs.append("/".join(child))
-            elif isinstance(child, str) and not quotes:
-                childstrs.append("%s" % child)
+            elif isinstance(child, str):
+                childstrs.append(child)
             else:
                 childstrs.append(repr(child))
-        if isinstance(self.label, str):
-            return "%s%s%s %s%s" % (
-                parens[0],
-                self.label,
-                nodesep,
-                " ".join(childstrs),
-                parens[1],
-            )
-        else:
-            return "%s%s%s %s%s" % (
-                parens[0],
-                repr(self.label),
-                nodesep,
-                " ".join(childstrs),
-                parens[1],
-            )
 
+        label = self.label
+        if not isinstance(label, str):
+            label = repr(label)
 
+        children = " ".join(childstrs)
+        return f"({label} {children})"
 
 """
 Some trees to run tests on:
