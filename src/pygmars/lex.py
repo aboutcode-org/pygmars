@@ -39,10 +39,10 @@ class Lexer:
     """
     Regular Expression Lexer
 
-    The Lexer assigns a token lebel to tokens by comparing their strings
-    to a series of regular expressions. For example, the following lexer uses
-    word suffixes to make guesses about the part of speech tag to use as a token
-    label:
+    The Lexer assigns a label to Tokens by comparing the Token string value to a
+    series of regular expressions using re.match (or a callable with the same
+    semantics). For example, the following lexer uses word suffixes to make
+    guesses about the part of speech tag to use as a Token label:
 
     >>> from pygmars.lex import Lexer
     >>> words = '''The Fulton County Grand Jury said Friday an investigation
@@ -73,24 +73,26 @@ class Lexer:
     >>> assert results == expected
     """
 
-    def __init__(self, regexps):
+    def __init__(self, matchers):
         """
-        Initialize a Lexer from a list of ``(regexp, label)`` tuples that
-        indicates that a Token with a value matching ``regexp`` should be
-        assigned a label of ``label``.  The regexp are evaluated in sequence and
-        the first match is returned.
+        Initialize a Lexer from a ``matchers`` list of ``(matcher, label)``
+        tuples that indicates that a Token with a value matching ``matcher``
+        should be assigned a label of ``label``.  The matchers are evaluated in
+        sequence and the first match is returned. A ``matcher`` is either:
+
+        - a regex string that will be compile and used with re.match
+        - a callable that takes a single string as argument and returns True
+        if the string is matched, False otherwise.
+
         """
         try:
-            self._regexps = [
-                (re.compile(regexp).match, label, regexp)
-                for regexp, label in regexps
+            self._matchers = [
+                (re.compile(m).match if isinstance(m, str) else m, label)
+                for m, label in matchers
             ]
-
         except Exception as e:
             raise Exception(
-                'Invalid Lexer regexp:', str(e),
-                'regexp:', repr(regexp), 'label:', repr(label)
-            ) from e
+                f'Invalid Lexer matcher: {m!r}, label: {label}') from e
 
     def tokenize(self, string, splitter=str.split):
         """
@@ -124,14 +126,13 @@ class Lexer:
         Assign a "label" to every token whose value is matched by one of regexp
         rules of this lexer.
         """
-        regexps = self._regexps
+        matchers = self._matchers
         for token in tokens:
-            for regexp, label, _pattern in regexps:
-                if regexp(token.value):
-                    # print(f'matched {token} with {_pattern!r}, {label}')
+            for matcher, label in matchers:
+                if matcher(token.value):
                     token.label = label
                     break
             yield token
 
     def __repr__(self):
-        return f"<Lexer: size={len(self._regexps)}>"
+        return f"<Lexer: size={len(self._matchers)}>"
