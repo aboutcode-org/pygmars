@@ -155,9 +155,14 @@ class Parser:
 
         trace = self._trace
 
+        parsed_string = None
         for _ in range(self._loop):
             for parse_rule in self.rules:
-                tree = parse_rule.parse(tree, trace=trace)
+                tree, parsed_string = parse_rule.parse(
+                    tree=tree,
+                    parsed_string=parsed_string,
+                    trace=trace,
+                )
         return tree
 
     def __repr__(self):
@@ -206,21 +211,21 @@ class ParseString:
         Construct a new ``ParseString`` from a ``tree`` parse Tree of Tokens.
         """
         self._root_label = tree.label
-        self._pieces = tree
+        self._tree = tree
         self._parse_string = "".join(f"<{p.label}>" for p in tree)
         self._validate = validate
 
     def validate(self, s):
         """
         Validate that the string ``s`` corresponds to a parsed version of
-        ``_pieces``.
+        ``_tree``.
 
         Check individual tags and that the backing parse string encodes a parsed
         version of a list of tokens. And that the labels match those in
-        ``_pieces``.
+        ``_tree``.
 
-        :raise ValueError: if the internal string representation of
-            this ``ParseString`` is invalid or not consistent with its _pieces.
+        Raise ValueError if the internal string representation of this
+        ``ParseString`` is invalid or not consistent with its _tree.
         """
         if not ParseString.is_valid(s):
             raise ValueError(f"Invalid parse:\n  {s}")
@@ -242,7 +247,13 @@ class ParseString:
         if self._validate:
             self.validate(self._parse_string)
 
-        # Use this alternating list to create the parse Tree.
+        tree = self._tree
+
+        parse_tree = Tree(self._root_label, [])
+        index = 0
+        matched = False
+
+        # Use this alternating splitter list to create the parse Tree.
         # We track if we have a match or not based on the curly braces.
         # The "pieces_splitter" will yield an alternation such that the first
         # item is not part of a match (and may be empty) and the next item is in
@@ -254,20 +265,13 @@ class ParseString:
         # >>> pieces_splitter("ads{<for>}{<bar>}")
         # ['ads',     '<for>', '',        '<bar>',  '']
         #  not match, match,   not match, match,    match
-
-        pieces = self._pieces
-
-        parse_tree = Tree(self._root_label, [])
-        index = 0
-        matched = False
-
         for piece in pieces_splitter(self._parse_string):
 
             # Find the list of tokens contained in this piece.
             length = piece.count("<")
-            subsequence = pieces[index:index + length]
+            subsequence = tree[index:index + length]
 
-            # Add this list of tokens to our pieces.
+            # Add this list of tokens to our tree.
             if matched:
                 parse_tree.append(Tree(label, subsequence))
             else:
@@ -306,6 +310,7 @@ class ParseString:
 
         # Save the transformation.
         self._parse_string = s
+        return self._parse_string
 
     def __repr__(self):
         return f"<ParseString: {self._parse_string!r}>"
@@ -489,7 +494,7 @@ class Rule:
         if self.label != as_token_label(self.label):
             raise Exception(f"Illegal Rule label: {self.label}")
 
-    def parse(self, tree, trace=0):
+    def parse(self, tree, parsed_string=None, trace=0):
         """
         Parse the ``tree`` parse Tree and return a new parse Tree that encodes
         the parsing in groups of a given Token sequence.  The set of nodes
@@ -512,22 +517,24 @@ class Rule:
 
         parse_string = ParseString(tree, validate=self._validate)
 
-        verbose = trace > 1
-        if trace:
-            print("# Input:")
-            print("  ", tree.pformat(margin=400))
-            print("  ", parse_string)
 
         # Apply this rule to the ParseString.
-        parse_string.apply_transform(self._transformer)
+        new_parsed_string = parse_string.apply_transform(self._transformer)
+        if new_parsed_string != parsed_string:
+            verbose = trace > 1
+            if trace:
+                print("# Input:")
+                print("  ", tree.pformat(margin=400))
+                print("  ", parse_string)
 
-        if verbose:
-            print("#", self.description + " (" + repr(self.pattern) + "):")
-        elif trace:
-            print("#", self.description + ":")
-            print("  ", parse_string)
+            if verbose:
+                print("#", self.description + " (" + repr(self.pattern) + "):")
+            elif trace:
+                print("#", self.description + ":")
+                print("  ", parse_string)
 
-        return parse_string.to_tree(self.label)
+            tree = parse_string.to_tree(self.label)
+        return tree, new_parsed_string
 
     def __repr__(self):
         if self.description:

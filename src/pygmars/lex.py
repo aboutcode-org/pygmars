@@ -92,7 +92,8 @@ class Lexer:
         try:
             self._matchers = [
                 (
-                    re.compile(m, flags=re_flags).match if isinstance(m, str)else m,
+                    re.compile(m, flags=re_flags).match
+                    if isinstance(m, str) else m,
                     label,
                 )
                 for m, label in matchers
@@ -127,7 +128,7 @@ class Lexer:
         tokens = (Token(val, pos=pos) for pos, val in enumerate(strings))
         return self.lex_tokens(tokens, trace=trace)
 
-    def lex_tokens(self, tokens, trace=True):
+    def lex_tokens(self, tokens, trace=False):
         """
         Return an iterable of pygmars.Token given a ``tokens`` Token iterable.
         Assign a "label" to every token whose value is matched by one of regexp
