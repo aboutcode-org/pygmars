@@ -5,6 +5,11 @@ Changelog
 Version 0.7.0 (next)
 -----------------------
 
+- Improve tracing: it is now possible to trace lexing. Tracing parsing
+  only reports which parsing actually was applied (rather than listing all)
+
+- Enable custom regex re flags in Lexer.
+
 
 Version 0.6.0
 ---------------
