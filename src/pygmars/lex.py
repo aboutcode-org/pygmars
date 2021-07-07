@@ -77,7 +77,7 @@ class Lexer:
     >>> assert results == expected
     """
 
-    def __init__(self, matchers):
+    def __init__(self, matchers, re_flags=0):
         """
         Initialize a Lexer from a ``matchers`` list of ``(matcher, label)``
         tuples that indicates that a Token with a value matching ``matcher``
@@ -91,7 +91,10 @@ class Lexer:
         """
         try:
             self._matchers = [
-                (re.compile(m).match if isinstance(m, str) else m, label)
+                (
+                    re.compile(m, flags=re_flags).match if isinstance(m, str)else m,
+                    label,
+                )
                 for m, label in matchers
             ]
         except Exception as e:
@@ -107,36 +110,51 @@ class Lexer:
             for pos, value in enumerate(splitter(line)):
                 yield Token(value, pos=pos, start_line=ln)
 
-    def lex_string(self, string):
+    def lex_string(self, string, trace=False):
         """
         Return an iterable of pygmars.Tokens given a ``string``. Assign a
         "label" to every token whose value is matched by one of rules of this
         lexer.
         """
-        return self.lex_tokens(self.tokenize(string))
+        return self.lex_tokens(self.tokenize(string), trace=trace)
 
-    def lex_strings(self, strings):
+    def lex_strings(self, strings, trace=False):
         """
         Return an iterable of pygmars.Tokens given a ``strings`` iterable of
         strings. Assign a "label" to every token whose value is matched by one
         of rules of this lexer.
         """
         tokens = (Token(val, pos=pos) for pos, val in enumerate(strings))
-        return self.lex_tokens(tokens)
+        return self.lex_tokens(tokens, trace=trace)
 
-    def lex_tokens(self, tokens):
+    def lex_tokens(self, tokens, trace=True):
         """
         Return an iterable of pygmars.Token given a ``tokens`` Token iterable.
         Assign a "label" to every token whose value is matched by one of regexp
         rules of this lexer.
         """
         matchers = self._matchers
-        for token in tokens:
-            for matcher, label in matchers:
+        for tidx, token in enumerate(tokens):
+            for midx, (matcher, label) in enumerate(matchers):
                 if matcher(token.value):
+                    if trace:
+                        _trace_lex(tidx, token, midx, matcher, label)
+
                     token.label = label
                     break
             yield token
 
     def __repr__(self):
         return f"<Lexer: size={len(self._matchers)}>"
+
+
+def _trace_lex(tidx, token, midx, matcher, label):
+    mtchd = matcher(token.value)
+    try:
+        # a regex
+        mtchr = matcher.__self__.pattern
+    except AttributeError:
+        # anything else
+        mtchr = repr(matcher)
+    print(f'lex_tokens: matcher #{midx} label: {label} pattern: {mtchr}')
+    print(f'    matched token #{tidx}: {token.value} matched: {mtchd}')
