@@ -36,7 +36,7 @@ Create a Rule and parse something:
     >>> pattern = "<.*>+"
     >>> description = "Parse everything"
     >>> rule = Rule(pattern, label='NP', description=description)
-    >>> parsed = rule.parse(tokens)
+    >>> parsed, parse_string = rule.parse(tokens)
     >>> parsed.pprint(margin=100)
     (ROOT (NP The/DT cat/NN sat/VBD on/IN the/DT mat/NN the/DT dog/NN chewed/VBD))
 
@@ -47,8 +47,6 @@ Printing Rule:
 
     >>> print(rule)
     <Rule: <.*>+ / NP # Parse everything>
-
-
 
 
 ParseString
@@ -82,6 +80,7 @@ underlying input.
     >>> print(cs)
      <T0>  <T1>  <T2>  <T3>  <T4>  <T5>  <T6>  <T7>  <T8>  <T9>
     >>> cs.apply_transform(partial(re.compile('<T3>').sub, '{<T3>}'))
+    '<T0><T1><T2>{<T3>}<T4><T5><T6><T7><T8><T9>'
     >>> print(cs)
      <T0>  <T1>  <T2> {<T3>} <T4>  <T5>  <T6>  <T7>  <T8>  <T9>
 
@@ -190,27 +189,27 @@ Parser
     >>> print("parse tree:", parser.parse(tokens))
     # Input:
        (ROOT The/DT cat/NN sat/VBD on/IN the/DT mat/NN the/DT dog/NN chewed/VBD)
-        <DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>
+       {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>
     # NP:
        {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>
     # Input:
        (ROOT (NP The/DT cat/NN) sat/VBD on/IN (NP the/DT mat/NN) (NP the/DT dog/NN) chewed/VBD)
-        <NP>  <VBD>  <IN>  <NP>  <NP>  <VBD>
+        <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>
     # Preposition:
         <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>
     # Input:
        (ROOT (NP The/DT cat/NN) sat/VBD (P on/IN) (NP the/DT mat/NN) (NP the/DT dog/NN) chewed/VBD)
-        <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>
+        <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
     # Verb:
         <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
     # Input:
        (ROOT (NP The/DT cat/NN) (V sat/VBD) (P on/IN) (NP the/DT mat/NN) (NP the/DT dog/NN) (V chewed/VBD))
-        <NP>  <V>  <P>  <NP>  <NP>  <V>
+        <NP>  <V> {<P>  <NP>} <NP>  <V>
     # PP -> P NP:
         <NP>  <V> {<P>  <NP>} <NP>  <V>
     # Input:
        (ROOT (NP The/DT cat/NN) (V sat/VBD) (PP (P on/IN) (NP the/DT mat/NN)) (NP the/DT dog/NN) (V chewed/VBD))
-        <NP>  <V>  <PP>  <NP>  <V>
+        <NP> {<V>  <PP>  <NP>}{<V>}
     # VP -> V (NP|PP)*:
         <NP> {<V>  <PP>  <NP>}{<V>}
     parse tree: (ROOT
