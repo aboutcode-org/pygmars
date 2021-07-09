@@ -2,8 +2,8 @@
 Changelog
 ================
 
-Version 0.7.0 (next)
------------------------
+Version 0.7.0
+-----------------
 
 - Improve tracing: it is now possible to trace lexing. Tracing parsing
   only reports which parsing actually was applied (rather than listing all)
