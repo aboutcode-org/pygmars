@@ -234,7 +234,7 @@ class ParseString:
             raise ValueError(f"Invalid parse: unbalanced or nested curly braces:\n  {s}")
 
         tags1 = tag_splitter(s)[1:-1]
-        tags2 = [piece.label for piece in self._pieces]
+        tags2 = [node.label for node in self._tree]
         if tags1 != tags2:
             raise ValueError(f"Invalid parse: tag changed:\n  {s}")
 
@@ -310,7 +310,7 @@ class ParseString:
 
         # Save the transformation.
         self._parse_string = s
-        return self._parse_string
+        return s
 
     def __repr__(self):
         return f"<ParseString: {self._parse_string!r}>"
@@ -496,9 +496,12 @@ class Rule:
 
     def parse(self, tree, parsed_string=None, trace=0):
         """
-        Parse the ``tree`` parse Tree and return a new parse Tree that encodes
-        the parsing in groups of a given Token sequence.  The set of nodes
-        identified in the tree depends on the pattern of this ``Rule``.
+        Parse the ``tree`` parse Tree and return a tuple with a new parse Tree
+        that encodes the parsing in groups of a given Token sequence and the
+        new_parsed_string as (tree, new_parsed_string).
+
+        The set of nodes identified in the tree depends on the pattern of this
+        ``Rule``.
 
         ``trace`` is the level of tracing when parsing.  ``0`` will generate no
         tracing output; ``1`` will generate normal tracing output; and ``2`` or
@@ -516,7 +519,6 @@ class Rule:
             tree = Tree(self._root_label, tree)
 
         parse_string = ParseString(tree, validate=self._validate)
-
 
         # Apply this rule to the ParseString.
         new_parsed_string = parse_string.apply_transform(self._transformer)
