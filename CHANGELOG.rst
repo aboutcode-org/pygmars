@@ -2,6 +2,8 @@
 Changelog
 ================
 
+
+
 Version 0.7.0
 -----------------
 
@@ -9,6 +11,8 @@ Version 0.7.0
   only reports which parsing actually was applied (rather than listing all)
 
 - Enable custom regex re flags in Lexer.
+
+- Convert generators to lists when building a Tree.
 
 
 Version 0.6.0
