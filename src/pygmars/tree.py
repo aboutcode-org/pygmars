@@ -6,7 +6,6 @@
 # See https://github.com/nexB/pygmars for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
-
 """
 A hierarchical tree structure used to store parse trees.
 """
@@ -30,6 +29,7 @@ A hierarchical tree structure used to store parse trees.
 # http://nltk.org/book
 
 import re
+from typing import Generator
 
 
 class Tree(list):
@@ -86,6 +86,9 @@ class Tree(list):
     def __init__(self, label, children):
         if not label:
             raise TypeError(f"Expected a label value: {label!r}")
+
+        if isinstance(children, Generator):
+            children = list(children)
 
         if not isinstance(children, list):
             raise TypeError(f"Children should be a list: {children!r}")
