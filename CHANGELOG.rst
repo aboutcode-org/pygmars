@@ -14,6 +14,9 @@ Version 0.7.0
 
 - Convert generators to lists when building a Tree.
 
+- When using Pygments lexers, the token label crafted from a Pygments token
+  type is stripped from the leading "Token."
+
 
 Version 0.6.0
 ---------------

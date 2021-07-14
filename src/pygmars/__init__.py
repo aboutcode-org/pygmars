@@ -85,13 +85,41 @@ class Token:
         """
         Return an iterable of Tokens built from a ``pygtokens`` iterable of
         tuples (pos, Pygments token, string value) as produced by Pygments
-        lexers. The Pygments Token types are normalized to token lanel, all
-        uppercase and dash-separated.
+        lexers. The Pygments Token types are normalized to a Token.label, all
+        uppercase and dash-separated. The pygmars.Token.label is derived from
+        the qualified class name of the Pygments pygments.token.Token class
+        name, ignoring the first "Token." segment which is consistent with
+        Pygments handling. The pygments.token._TokenType for Tokens is peculiar
+        as it overrides __getattr__ to create new Token types.
         """
         lineno = 1
-        for pos, label, value in pygtokens:
+        for pos, tokentype, value in pygtokens:
+            label = convert_pygments_token_to_label(tokentype)
             yield cls(value, label=label, pos=pos, start_line=lineno)
-            lineno += value.count("\n")
+            lineno += value.count('\n')
+
+
+def convert_pygments_token_to_label(token):
+    """
+    Return a string suitabel to use as a pygmars.Token.label given a Pygments
+    ``token`` pygments.token.Token-like object.
+
+    For example, let's create a Pygments-like ojects:
+    >>> convert_pygments_token_to_label('Token.Text')
+    'TEXT'
+    >>> convert_pygments_token_to_label('Token.Text.Whitespace')
+    'TEXT-WHITESPACE'
+    >>> convert_pygments_token_to_label('Token')
+    'TOKEN'
+    """
+    # take the string of the pygments type, as in "Token.Text.Whitespace"
+    label = str(token)
+    # strip leading "Token." dotted segment, unless that's the only segment to get as in "Text.Whitespace"
+    if label != 'Token' and '.' in label:
+        _stripped, _, label = label.partition('.')
+    # normalize to "TEXT-WHITESPACE"
+    label = as_token_label(label)
+    return label
 
 
 only_wordchars = re.compile(r'[^A-Z0-9\-]').sub
