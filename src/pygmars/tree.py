@@ -276,7 +276,7 @@ class Tree(list):
             " " * 12,
             pos,
         )
-        # Add a display showing the error token itsels:
+        # Add a display showing the error token itself:
         s = s.replace("\n", " ").replace("\t", " ")
         offset = pos
         if len(s) > pos + 10:
@@ -288,12 +288,7 @@ class Tree(list):
         raise ValueError(msg)
 
     def __repr__(self):
-        childstr = ", ".join(repr(c) for c in self)
-        return "%s(%s, [%s])" % (
-            type(self).__name__,
-            repr(self.label),
-            childstr,
-        )
+        return str(self)
 
     def __str__(self):
         return self.pformat()
@@ -304,7 +299,7 @@ class Tree(list):
         """
         print(self.pformat(**kwargs))
 
-    def pformat(self, margin=70, indent=0):
+    def pformat(self, margin=90, indent=0):
         """
         :return: A pretty-printed string representation of this tree.
         :rtype: str
@@ -322,10 +317,7 @@ class Tree(list):
             return s
 
         # If it doesn't fit on one line, then write it on multi-lines.
-        label = self.label
-        if not isinstance(label, str):
-            label = repr(label)
-        s = f"({label}"
+        s = " " * indent + f"(label={self.label!r}, children=("
 
         twodents = indent + 2
 
@@ -333,12 +325,10 @@ class Tree(list):
             if isinstance(child, Tree):
                 s += ("\n" + " " * twodents + child.pformat(margin, twodents))
             elif isinstance(child, (tuple, list)):
-                s += "\n" + (" " * twodents) + "/".join(child)
-            elif isinstance(child, str):
-                s += "\n" + (" " * twodents) + child
+                s += "\n" + (" " * twodents) + ", ".join(repr(child))
             else:
                 s += "\n" + (" " * twodents) + repr(child)
-        return s + ")"
+        return s + "\n" + " " *indent + "))"
 
     def _pformat_flat(self):
         childstrs = []

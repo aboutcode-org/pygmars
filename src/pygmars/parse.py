@@ -150,19 +150,21 @@ class Parser:
         if not tree:
             raise Exception(f"Cannot parse empty tree: {tree!r}")
 
+        trace = self._trace
+
         if not isinstance(tree, Tree):
             tree = Tree(self._root_label, tree)
 
-        trace = self._trace
-
-        parsed_string = None
-        for _ in range(self._loop):
+        for i in range(self._loop):
+            if trace:
+                print(f'parse: loop# {i}')
             for parse_rule in self.rules:
-                tree, parsed_string = parse_rule.parse(
-                    tree=tree,
-                    parsed_string=parsed_string,
-                    trace=trace,
-                )
+                if trace:
+                    print(f'parse: parse_rule: {parse_rule!r}')
+                    print(f'parse: parse_tree len: {len(tree)}')
+                tree = parse_rule.parse(tree=tree, trace=trace)
+                if trace:
+                    print(f'parse: parse_tree new len: {len(tree)}')
         return tree
 
     def __repr__(self):
@@ -170,7 +172,7 @@ class Parser:
 
     def __str__(self):
         rules = "\n".join(map(str, self.rules))
-        return f"Parser with  {len(self.rules)} rules:\n{rules}"
+        return f"<Parser with  {len(self.rules)} rules>\n{rules}"
 
 
 class ParseString:
@@ -474,6 +476,7 @@ class Rule:
 
         regexp = label_pattern_to_regex(pattern)
         regexp = fr"(?P<group>{regexp})"
+        self._regexp = regexp
         # the replacement wraps matched tokens in curly braces
         self._repl = "{\\g<group>}"
         self._transformer = partial(re.compile(regexp).sub, self._repl)
@@ -494,21 +497,18 @@ class Rule:
         if self.label != as_token_label(self.label):
             raise Exception(f"Illegal Rule label: {self.label}")
 
-    def parse(self, tree, parsed_string=None, trace=0):
+    def parse(self, tree, trace=0):
         """
-        Parse the ``tree`` parse Tree and return a tuple with a new parse Tree
-        that encodes the parsing in groups of a given Token sequence and the
-        new_parsed_string as (tree, new_parsed_string).
+        Parse the ``tree`` parse Tree and return a new parse Tree that encodes
+        the parsing in groups of Token sequences.
 
         The set of nodes identified in the tree depends on the pattern of this
         ``Rule``.
 
         ``trace`` is the level of tracing when parsing.  ``0`` will generate no
         tracing output; ``1`` will generate normal tracing output; and ``2`` or
-        higher will generate verbose tracing output. This value overrides the
-        trace level value that was given to the constructor.
+        higher will generate verbose tracing output.
         """
-
         if len(tree) == 0:
             raise Exception(f"Warning: parsing empty tree: {tree!r}")
 
@@ -520,23 +520,32 @@ class Rule:
 
         parse_string = ParseString(tree, validate=self._validate)
 
-        # Apply this rule to the ParseString.
-        new_parsed_string = parse_string.apply_transform(self._transformer)
-        if new_parsed_string != parsed_string:
-            verbose = trace > 1
-            if trace:
-                print("# Input:")
-                print("  ", tree.pformat(margin=400))
-                print("  ", parse_string)
+        before_parse = str(parse_string)
+        if trace:
+            print(f"Rule.parse transformer regex: {self._regexp}")
 
-            if verbose:
-                print("#", self.description + " (" + repr(self.pattern) + "):")
-            elif trace:
-                print("#", self.description + ":")
-                print("  ", parse_string)
+        parse_string.apply_transform(self._transformer)
+        after_parse = str(parse_string)
+        if after_parse != before_parse:
+            # only update the tree and the trace if there have been changes from
+            # this parse
+            if trace:
+                print()
+                print("# Input parsed as label:", repr(self.label))
+                if trace > 1:
+                    # verbose
+                    print(tree.pformat())
+                    print(
+                        "with pattern:",
+                        self.description ,
+                        "(" + repr(self.pattern) + ")"
+                    )
+
+                print("  before:", repr(before_parse))
+                print("  after :", repr(after_parse))
 
             tree = parse_string.to_tree(self.label)
-        return tree, new_parsed_string
+        return tree
 
     def __repr__(self):
         if self.description:
