@@ -12,10 +12,12 @@ Version 0.7.0
 
 - Enable custom regex re flags in Lexer.
 
-- Convert generators to lists when building a Tree.
+- Convert generators to list when building a Tree.
 
 - When using Pygments lexers, the token label crafted from a Pygments token
   type is stripped from the leading "Token."
+
+- Improve Tree representation to make it easier to read traces
 
 
 Version 0.6.0
