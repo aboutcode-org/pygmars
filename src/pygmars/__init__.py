@@ -34,10 +34,10 @@ class Token:
         self.pos = pos
 
     def __repr__(self, *args, **kwargs):
-        return f'{self.value}/{self.label}'
+        return f'(label={self.label!r}, value={self.value!r})'
 
     def __str__(self, *args, **kwargs):
-        return f'Token({self.value!r}, {self.label!r}, {self.start_line}, {self.pos})'
+        return f'Token(value={self.value!r}, label={self.label!r}, start_line={self.start_line}, pos={self.pos})'
 
     @classmethod
     def from_numbered_lines(cls, numbered_lines, splitter=str.split):
