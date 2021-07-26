@@ -36,9 +36,22 @@ Create a Rule and parse something:
     >>> pattern = "<.*>+"
     >>> description = "Parse everything"
     >>> rule = Rule(pattern, label='NP', description=description)
-    >>> parsed, parse_string = rule.parse(tokens)
+    >>> parsed = rule.parse(tokens)
     >>> parsed.pprint(margin=100)
-    (ROOT (NP The/DT cat/NN sat/VBD on/IN the/DT mat/NN the/DT dog/NN chewed/VBD))
+    (label='ROOT', children=(
+        (label='NP', children=(
+        (label='DT', value='The')
+        (label='NN', value='cat')
+        (label='VBD', value='sat')
+        (label='IN', value='on')
+        (label='DT', value='the')
+        (label='NN', value='mat')
+        (label='DT', value='the')
+        (label='NN', value='dog')
+        (label='VBD', value='chewed')
+      ))
+    ))
+
 
 Printing Rule:
 
@@ -160,7 +173,7 @@ An exception is raise when parsing an empty tree:
     >>> parser.parse(Tree('S', []))
     Traceback (most recent call last):
       . . .
-    Exception: Warning: parsing empty tree: Tree('S', [])
+    Exception: Warning: parsing empty tree: (S )
 
 
 Parser
@@ -178,7 +191,7 @@ Parser
     >>> print(repr(parser))
     <Parser with 5 rules>
     >>> print(parser)
-    Parser with  5 rules:
+    <Parser with  5 rules>
     <Rule: <DT>? <JJ>* <NN>* / NP # NP>
     <Rule: <IN> / P # Preposition>
     <Rule: <V.*> / V # Verb>
@@ -187,38 +200,59 @@ Parser
 
     >>> parser = Parser(grammar, trace=True)
     >>> print("parse tree:", parser.parse(tokens))
-    # Input:
-       (ROOT The/DT cat/NN sat/VBD on/IN the/DT mat/NN the/DT dog/NN chewed/VBD)
-       {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>
-    # NP:
-       {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>
-    # Input:
-       (ROOT (NP The/DT cat/NN) sat/VBD on/IN (NP the/DT mat/NN) (NP the/DT dog/NN) chewed/VBD)
-        <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>
-    # Preposition:
-        <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>
-    # Input:
-       (ROOT (NP The/DT cat/NN) sat/VBD (P on/IN) (NP the/DT mat/NN) (NP the/DT dog/NN) chewed/VBD)
-        <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
-    # Verb:
-        <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
-    # Input:
-       (ROOT (NP The/DT cat/NN) (V sat/VBD) (P on/IN) (NP the/DT mat/NN) (NP the/DT dog/NN) (V chewed/VBD))
-        <NP>  <V> {<P>  <NP>} <NP>  <V>
-    # PP -> P NP:
-        <NP>  <V> {<P>  <NP>} <NP>  <V>
-    # Input:
-       (ROOT (NP The/DT cat/NN) (V sat/VBD) (PP (P on/IN) (NP the/DT mat/NN)) (NP the/DT dog/NN) (V chewed/VBD))
-        <NP> {<V>  <PP>  <NP>}{<V>}
-    # VP -> V (NP|PP)*:
-        <NP> {<V>  <PP>  <NP>}{<V>}
-    parse tree: (ROOT
-      (NP The/DT cat/NN)
-      (VP
-        (V sat/VBD)
-        (PP (P on/IN) (NP the/DT mat/NN))
-        (NP the/DT dog/NN))
-      (VP (V chewed/VBD)))
+    parse: loop# 0
+    parse: parse_rule: <Rule: <DT>? <JJ>* <NN>* / NP # NP>
+    parse: parse_tree len: 9
+    Rule.parse transformer regex: (?P<group>(?:<(?:DT)>)?(?:<(?:JJ)>)*(?:<(?:NN)>)*)
+    <BLANKLINE>
+    # Input parsed as label: 'NP'
+      before: ' <DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>'
+      after : '{<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>'
+    parse: parse_tree new len: 6
+    parse: parse_rule: <Rule: <IN> / P # Preposition>
+    parse: parse_tree len: 6
+    Rule.parse transformer regex: (?P<group>(?:<(?:IN)>))
+    <BLANKLINE>
+    # Input parsed as label: 'P'
+      before: ' <NP>  <VBD>  <IN>  <NP>  <NP>  <VBD>'
+      after : ' <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>'
+    parse: parse_tree new len: 6
+    parse: parse_rule: <Rule: <V.*> / V # Verb>
+    parse: parse_tree len: 6
+    Rule.parse transformer regex: (?P<group>(?:<(?:V[^\{\}<>]*)>))
+    <BLANKLINE>
+    # Input parsed as label: 'V'
+      before: ' <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>'
+      after : ' <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}'
+    parse: parse_tree new len: 6
+    parse: parse_rule: <Rule: <P> <NP> / PP # PP -> P NP>
+    parse: parse_tree len: 6
+    Rule.parse transformer regex: (?P<group>(?:<(?:P)>)(?:<(?:NP)>))
+    <BLANKLINE>
+    # Input parsed as label: 'PP'
+      before: ' <NP>  <V>  <P>  <NP>  <NP>  <V>'
+      after : ' <NP>  <V> {<P>  <NP>} <NP>  <V>'
+    parse: parse_tree new len: 5
+    parse: parse_rule: <Rule: <V> <NP|PP>* / VP # VP -> V (NP|PP)*>
+    parse: parse_tree len: 5
+    Rule.parse transformer regex: (?P<group>(?:<(?:V)>)(?:<(?:NP|PP)>)*)
+    <BLANKLINE>
+    # Input parsed as label: 'VP'
+      before: ' <NP>  <V>  <PP>  <NP>  <V>'
+      after : ' <NP> {<V>  <PP>  <NP>}{<V>}'
+    parse: parse_tree new len: 3
+    parse tree: (label='ROOT', children=(
+      (NP (label='DT', value='The') (label='NN', value='cat'))
+        (label='VP', children=(
+        (V (label='VBD', value='sat'))
+            (label='PP', children=(
+          (P (label='IN', value='on'))
+          (NP (label='DT', value='the') (label='NN', value='mat'))
+        ))
+        (NP (label='DT', value='the') (label='NN', value='dog'))
+      ))
+      (VP (V (label='VBD', value='chewed')))
+    ))
 
 
 Illegal patterns give an error message:

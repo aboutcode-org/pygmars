@@ -68,7 +68,49 @@ class TestRule(unittest.TestCase):
         tokens = list(Token.from_value_label_tuples(value_labels))
         cp = Parser('GROUP: <N.*>{4,}')
         tree = cp.parse(tokens)
-        expected = """(ROOT
+        expected = """(label='ROOT', children=(
+  (label='AT', value='The')
+  (label='NP', value='September-October')
+  (label='NN', value='term')
+  (label='NN', value='jury')
+  (label='HVD', value='had')
+  (label='BEN', value='been')
+  (label='VBN', value='charged')
+  (label='IN', value='by')
+  (label='NP-TL', value='Fulton')
+  (label='JJ-TL', value='Superior')
+    (label='GROUP', children=(
+    (label='NN-TL', value='Court')
+    (label='NN-TL', value='Judge')
+    (label='NP', value='Durwood')
+    (label='NP', value='Pye')
+  ))
+  (label='TO', value='to')
+  (label='VB', value='investigate')
+  (label='NNS', value='reports')
+  (label='IN', value='of')
+  (label='JJ', value='possible')
+  (label='BACKTICK', value='``')
+  (label='NNS', value='irregularities')
+  (label='QUOTE', value="''")
+  (label='IN', value='in')
+  (label='AT', value='the')
+  (label='JJ', value='hard-fought')
+  (label='NN', value='primary')
+  (label='WDT', value='which')
+  (label='BEDZ', value='was')
+  (label='VBN', value='won')
+  (label='IN', value='by')
+    (label='GROUP', children=(
+    (label='NN-TL', value='Mayor-nominate')
+    (label='NP', value='Ivan')
+    (label='NP', value='Allen')
+    (label='NP', value='Jr.')
+  ))
+  (label='DOT', value='.')
+))"""
+
+        """(ROOT
   The/AT
   September-October/NP
   term/NN
