@@ -1,6 +1,5 @@
 The following organizations or individuals have contributed to this repo:
 
-
 pygmars authors and contributors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
