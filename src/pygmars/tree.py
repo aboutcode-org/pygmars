@@ -293,6 +293,16 @@ class Tree(list):
     def __str__(self):
         return self.pformat()
 
+    def to_dict(self):
+        children = []
+
+        for child in self:
+            if not hasattr(child, 'to_dict'):
+                raise Exception(f'Invalid tree structure: {self}')
+            children.append(child.to_dict())
+
+        return {self.label: children}
+
     def pprint(self, **kwargs):
         """
         Print a string representation of this Tree

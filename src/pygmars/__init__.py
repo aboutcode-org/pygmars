@@ -39,6 +39,14 @@ class Token:
     def __str__(self, *args, **kwargs):
         return f'Token(value={self.value!r}, label={self.label!r}, start_line={self.start_line}, pos={self.pos})'
 
+    def to_dict(self):
+        return dict(
+            label=self.label, 
+            value=self.value, 
+            start_line=self.start_line, 
+            pos=self.pos
+        )
+
     @classmethod
     def from_numbered_lines(cls, numbered_lines, splitter=str.split):
         """
