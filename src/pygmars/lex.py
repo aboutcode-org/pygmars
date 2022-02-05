@@ -39,6 +39,12 @@ import re
 from pygmars import Token
 
 
+class InvalidLexerMatcher(Exception):
+    """
+    Raise when a lexer matcher is invalid.
+    """
+
+
 class Lexer:
     """
     Regular Expression Lexer
@@ -87,19 +93,22 @@ class Lexer:
         - a regex string that will be compile and used with re.match
         - a callable that takes a single string as argument and returns True
         if the string is matched, False otherwise.
-
         """
+
+        self._matchers = []
+        append_matcher = self._matchers.append
         try:
-            self._matchers = [
-                (
-                    re.compile(m, flags=re_flags).match
-                    if isinstance(m, str) else m,
-                    label,
-                )
-                for m, label in matchers
-            ]
-        except Exception as e:
-            raise Exception(
+            for m, label in matchers:
+                # if this is string we compile as re and get a callable.
+                if isinstance(m, str):
+                    mtc = re.compile(m, flags=re_flags).match
+                else:
+                    # Otherwise we assume this is some callable.
+                    mtc = m
+                append_matcher((mtc, label,))
+
+        except (Exception, FutureWarning) as e:
+            raise InvalidLexerMatcher(
                 f'Invalid Lexer matcher: {m!r}, label: {label}') from e
 
     def tokenize(self, string, splitter=str.split):
