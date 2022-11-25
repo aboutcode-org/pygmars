@@ -8,7 +8,7 @@
 
 """
 
-This module defines  ``Parser`` which is a regular expression-based parser to
+This module defines ``Parser`` which is a regular expression-based parser to
 parse list of Tokens in a parse tree where each node has a label.
 
 This is originally based on NLTK POS chunk parsing used to identify non-
@@ -50,12 +50,16 @@ A ``pattern`` can update the grouping of tokens and trees by modifying a
 grouping encoded by a ``ParseString``.
 
 A ``pattern`` uses a modified version of regular expression patterns.  Patterns
-are used to match sequence of Token or Tree labels. Examples of label patterns
-are::
+are used to match sequence of Token or Tree labels. 
+This string contains a sequence of angle-bracket delimited labels (e.g. the
+Token or Tree labels), with the grouping indicated by curly braces.
+Some examples of encoding label patterns are::
 
-     r'(<DT>|<JJ>|<NN>)+'
-     r'<NN>+'
-     r'<NN.*>'
+     (<DT>|<JJ>|<NN>)+
+     <NN>+
+     <NN.*>
+
+    {<DT><JJ><NN>} <VBN><IN> {<DT><NN>} {<DT><NN>} <VBD>
 
 The differences between regular expression patterns and label patterns are:
 
@@ -569,14 +573,17 @@ class Rule:
         >>> Rule.from_string('FOO: <DT>?<NN.*>+')
         <Rule: <DT>?<NN.*>+ / FOO>
         """
-        label, _, pattern = string.partition(":")
-        pattern, _, description = pattern.partition("#")
+        if ":" not in string:
+            raise ValueError(f"Missing rule label: no colon separator between label and pattern in: {string!r}")
+        label, _, pattern_desc = string.partition(":")
+        pattern, _, description = pattern_desc.partition("#")
+
         label = label.strip()
         pattern = pattern.strip()
         description = description.strip()
 
         if not pattern:
-            raise ValueError(f"Empty pattern: {string}")
+            raise ValueError(f"Empty pattern: string: {string!r}, label: {label!r}, description: {description!r}")
 
         if not label:
             raise ValueError(f"Missing rule label: {string}")
