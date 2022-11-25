@@ -19,25 +19,22 @@ from pygmars.lex import InvalidLexerMatcher
 
 
 class TestLexer(unittest.TestCase):
-
     def test_Lexer_simple(self):
-
         def callable_matcher(s):
             return False
 
         matchers = [
-            (r'^Copyright\.txt$', 'NN'),
-            (callable_matcher, 'FOO'),
+            (r"^Copyright\.txt$", "NN"),
+            (callable_matcher, "FOO"),
         ]
         Lexer(matchers)
 
     def test_Lexer_fails_on_regex_error(self):
-
         def callable_matcher(s):
             return False
 
         matchers = [
-            (r'^C(opyright\.txt$[(', 'NN'),
+            (r"^C(opyright\.txt$[(", "NN"),
         ]
         try:
             Lexer(matchers)
