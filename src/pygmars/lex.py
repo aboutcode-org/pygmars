@@ -105,11 +105,15 @@ class Lexer:
                 else:
                     # Otherwise we assume this is some callable.
                     mtc = m
-                append_matcher((mtc, label,))
+                append_matcher(
+                    (
+                        mtc,
+                        label,
+                    )
+                )
 
         except (Exception, FutureWarning) as e:
-            raise InvalidLexerMatcher(
-                f'Invalid Lexer matcher: {m!r}, label: {label}') from e
+            raise InvalidLexerMatcher(f"Invalid Lexer matcher: {m!r}, label: {label}") from e
 
     def tokenize(self, string, splitter=str.split):
         """
@@ -166,5 +170,5 @@ def _trace_lex(tidx, token, midx, matcher, label):
     except AttributeError:
         # anything else
         mtchr = repr(matcher)
-    print(f'lex_tokens: matcher #{midx} label: {label} pattern: {mtchr}')
-    print(f'    matched token #{tidx}: {token.value} matched: {mtchd}')
+    print(f"lex_tokens: matcher #{midx} label: {label} pattern: {mtchr}")
+    print(f"    matched token #{tidx}: {token.value} matched: {mtchd}")

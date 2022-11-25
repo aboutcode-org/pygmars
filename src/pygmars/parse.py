@@ -161,14 +161,14 @@ class Parser:
 
         for i in range(self._loop):
             if trace:
-                print(f'parse: loop# {i}')
+                print(f"parse: loop# {i}")
             for parse_rule in self.rules:
                 if trace:
-                    print(f'parse: parse_rule: {parse_rule!r}')
-                    print(f'parse: parse_tree len: {len(tree)}')
+                    print(f"parse: parse_rule: {parse_rule!r}")
+                    print(f"parse: parse_tree len: {len(tree)}")
                 tree = parse_rule.parse(tree=tree, trace=trace)
                 if trace:
-                    print(f'parse: parse_tree new len: {len(tree)}')
+                    print(f"parse: parse_tree new len: {len(tree)}")
         return tree
 
     def __repr__(self):
@@ -205,9 +205,10 @@ class ParseString:
     parse Tree from the backing pieces.
 
     """
+
     # Anything that's not a delimiter such as <> or {}
     LABEL_CHARS = r"[^\{\}<>]"
-    LABEL = fr"(<{LABEL_CHARS}+>)"
+    LABEL = rf"(<{LABEL_CHARS}+>)"
 
     # return a True'ish value if the parse results look valid
     is_valid = re.compile(r"^(\{?%s\}?)*?$" % LABEL).match
@@ -275,7 +276,7 @@ class ParseString:
 
             # Find the list of tokens contained in this piece.
             length = piece.count("<")
-            subsequence = tree[index:index + length]
+            subsequence = tree[index : index + length]
 
             # Add this list of tokens to our tree.
             if matched:
@@ -391,10 +392,7 @@ def has_balanced_non_nested_curly_braces(string):
 # this should probably be made more strict than it is -- e.g., it
 # currently accepts 'foo'.
 is_label_pattern = re.compile(
-    r"^((%s|<%s>)*)$" % (
-        r"([^{}<>]|{\d+,?}|{\d*,\d+})+",
-        r"[^{}<>]+"
-    )
+    r"^((%s|<%s>)*)$" % (r"([^{}<>]|{\d+,?}|{\d*,\d+})+", r"[^{}<>]+")
 ).match
 
 remove_spaces = re.compile(r"\s").sub
@@ -436,11 +434,7 @@ def label_pattern_to_regex(label_pattern):
     should not contain nested or mismatched angle-brackets.
     """
     # Clean up the regular expression
-    label_pattern = (
-        remove_spaces("", label_pattern)
-        .replace("<", "(?:<(?:")
-        .replace(">", ")>)")
-    )
+    label_pattern = remove_spaces("", label_pattern).replace("<", "(?:<(?:").replace(">", ")>)")
 
     # Check the regular expression
     if not is_label_pattern(label_pattern):
@@ -479,7 +473,7 @@ class Rule:
         self._root_label = root_label
 
         regexp = label_pattern_to_regex(pattern)
-        regexp = fr"(?P<group>{regexp})"
+        regexp = rf"(?P<group>{regexp})"
         self._regexp = regexp
         # the replacement wraps matched tokens in curly braces
         self._repl = "{\\g<group>}"
@@ -539,11 +533,7 @@ class Rule:
                 if trace > 1:
                     # verbose
                     print(tree.pformat())
-                    print(
-                        "with pattern:",
-                        self.description ,
-                        "(" + repr(self.pattern) + ")"
-                    )
+                    print("with pattern:", self.description, "(" + repr(self.pattern) + ")")
 
                 print("  before:", repr(before_parse))
                 print("  after :", repr(after_parse))
@@ -574,7 +564,9 @@ class Rule:
         <Rule: <DT>?<NN.*>+ / FOO>
         """
         if ":" not in string:
-            raise ValueError(f"Missing rule label: no colon separator between label and pattern in: {string!r}")
+            raise ValueError(
+                f"Missing rule label: no colon separator between label and pattern in: {string!r}"
+            )
         label, _, pattern_desc = string.partition(":")
         pattern, _, description = pattern_desc.partition("#")
 
@@ -583,7 +575,9 @@ class Rule:
         description = description.strip()
 
         if not pattern:
-            raise ValueError(f"Empty pattern: string: {string!r}, label: {label!r}, description: {description!r}")
+            raise ValueError(
+                f"Empty pattern: string: {string!r}, label: {label!r}, description: {description!r}"
+            )
 
         if not label:
             raise ValueError(f"Missing rule label: {string}")

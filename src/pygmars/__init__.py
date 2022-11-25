@@ -13,18 +13,19 @@ class Token:
     """
     Represent a word token with its label, line number and line position.
     """
+
     #  keep memory requirements low by preventing creation of instance dicts.
     __slots__ = (
         # the string value of a token
-        'value',
+        "value",
         # a token label as a string.
         # this is converted to an UPPER-CASE, dash-seprated string on creation
-        'label',
+        "label",
         # starting line number in the original text, one-based
-        'start_line',
+        "start_line",
         # the positition of this token; typically a token pos in its line, zero-
         # based, but can be an absolute position or an offset too
-        'pos',
+        "pos",
     )
 
     def __init__(self, value, label=None, start_line=None, pos=None):
@@ -34,18 +35,13 @@ class Token:
         self.pos = pos
 
     def __repr__(self, *args, **kwargs):
-        return f'(label={self.label!r}, value={self.value!r})'
+        return f"(label={self.label!r}, value={self.value!r})"
 
     def __str__(self, *args, **kwargs):
-        return f'Token(value={self.value!r}, label={self.label!r}, start_line={self.start_line}, pos={self.pos})'
+        return f"Token(value={self.value!r}, label={self.label!r}, start_line={self.start_line}, pos={self.pos})"
 
     def to_dict(self):
-        return dict(
-            label=self.label, 
-            value=self.value, 
-            start_line=self.start_line, 
-            pos=self.pos
-        )
+        return dict(label=self.label, value=self.value, start_line=self.start_line, pos=self.pos)
 
     @classmethod
     def from_numbered_lines(cls, numbered_lines, splitter=str.split):
@@ -104,7 +100,7 @@ class Token:
         for pos, tokentype, value in pygtokens:
             label = convert_pygments_token_to_label(tokentype)
             yield cls(value, label=label, pos=pos, start_line=lineno)
-            lineno += value.count('\n')
+            lineno += value.count("\n")
 
 
 def convert_pygments_token_to_label(token):
@@ -123,14 +119,14 @@ def convert_pygments_token_to_label(token):
     # take the string of the pygments type, as in "Token.Text.Whitespace"
     label = str(token)
     # strip leading "Token." dotted segment, unless that's the only segment to get as in "Text.Whitespace"
-    if label != 'Token' and '.' in label:
-        _stripped, _, label = label.partition('.')
+    if label != "Token" and "." in label:
+        _stripped, _, label = label.partition(".")
     # normalize to "TEXT-WHITESPACE"
     label = as_token_label(label)
     return label
 
 
-only_wordchars = re.compile(r'[^A-Z0-9\-]').sub
+only_wordchars = re.compile(r"[^A-Z0-9\-]").sub
 
 
 def as_token_label(s):
@@ -140,7 +136,7 @@ def as_token_label(s):
     They do not start with a digit or dash and do not end with a dash.
     """
     s = str(s).upper()
-    s = only_wordchars(' ', s)
-    s = ' '.join(s.split())
-    s = s.replace(' ', '-').replace('--', '-').strip('-').lstrip('0123456789')
+    s = only_wordchars(" ", s)
+    s = " ".join(s.split())
+    s = s.replace(" ", "-").replace("--", "-").strip("-").lstrip("0123456789")
     return s
