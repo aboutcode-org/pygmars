@@ -12,19 +12,17 @@ regular expressions and identify sequences of words using lightweight grammars
 to obtain a parse tree.
 
 The lexing task transforms a sequence of words or strings (e.g. already split
-in words) in an sequence of Token objects assigning a label to each word and
-tracking position and line numbers. 
+in words) in a sequence of Token objects, assigning a label to each word and
+tracking their position and line number. 
 
 In particular, the lexing output is designed to be compatible with the output
 of Pygments lexers. It becomes possible to build simple grammars on top of
 existing Pygments lexers to perform lightweight parsing of the many (130+)
 programming languages supported by Pygments.
 
-(NOTE: Using Pygments lexers is WIP and NOT YET tested.)
-
 The parsing task transforms a sequence of Tokens in a parse Tree where each node
 in the tree is recognized and assigned a label. Parsing is using regular
-expression-based grammar rules applied to the recognized Token sequences.
+expression-based grammar rules applied to recognize Token sequences.
 
 These rules are evaluated sequentially and not recursively: this keeps things
 simple and works very well in practice. This approach and the rules syntax has
@@ -37,11 +35,14 @@ What about the name?
 "pygmars" is a portmanteau of Pyg-ments and Gram-mars.
 
 
-Origin
--------
+Origins
+--------
 
 This library is based on heavily modified, simplified and remixed original code
 from NLTK regex POS tagger (renamed lexer) and regex chunker (renamed parser).
+The original usage of NLTK was designed by @savinosto parse copyrights statements
+in ScanCode Toolkit.
+
 
 Users
 -------
@@ -63,11 +64,11 @@ Why create this seemingly redundant library? Why not use NLTK directly?
 
 - In particular NLTK POS tagging and chunking has been the engine used in
   ScanCode toolkit copyright and author detection and there are some
-  improvements, simplification  and optimizations that would be difficult to
+  improvements, simplifications and optimizations that would be difficult to
   implement in NLTK directly and unlikely to be accepted upstream. For instance,
   simplification of the code subset used for copyright detection enabled a big
-  boost in performances. Improvements to track the Token lines and positions may
-  not have been possible withing the NLTK API.
+  boost in performance. Improvements to track the Token lines and positions may
+  not have been possible within the NLTK API.
 
 - Newer versions of NLTK have several extra required dependencies that we do
   not need. This is turn makes every tool heavier and complex when they only use
@@ -78,9 +79,9 @@ Why create this seemingly redundant library? Why not use NLTK directly?
   languages to extract metadata (such as dependencies) from package manifests.
   Some parsers have been built by hand (such as gemfileparser), or use the
   Python ast module (for Python setup.py), or they use existing Pygments lexers
-  as a base. A goal of this library is to be able to build lightweight parsers
-  based on reusing Pygments lexer's output as an input. This is fairly different
-  from NLP in terms of goals.
+  as a base. A goal of this library is to be enable building lightweight parsers
+  reusing a Pygments lexer output as an input for a grammar. This is fairly
+  different from NLP in terms of goals.
 
 
 Theory of operations
@@ -112,7 +113,6 @@ such as::
 Here the left hand side "ASSIGNMENT" label is produced when the right hand side
 sequence of Token labels "<VARNAME> <EQUAL> <STRING|INT|FLOAT>" is matched.
 "# variable assignment" is kept as a description for this rule.
-
 
 
 License
