@@ -6,8 +6,37 @@
 # See https://github.com/nexB/pygmars for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
+
 """
 A hierarchical tree structure used to store parse trees.
+
+Some example trees:
+
+>>> from pygmars.tree import *
+>>> dp1 = Tree('dp', [Tree('d', ['the']), Tree('np', ['dog'])])
+>>> dp2 = Tree('dp', [Tree('d', ['the']), Tree('np', ['cat'])])
+>>> vp = Tree('vp', [Tree('v', ['chased']), dp2])
+>>> tree = Tree('s', [dp1, vp])
+>>> print(tree)
+(label='s', children=(
+  (label='dp', children=(
+    (label='d', children=(
+      the)
+    (label='np', children=(
+      dog))
+  (label='vp', children=(
+    (label='v', children=(
+      chased)
+    (label='dp', children=(
+      (label='d', children=(
+        the)
+      (label='np', children=(
+        cat))))
+
+The node label is accessed using the `label` attribute:
+>>> dp1.label, dp2.label, vp.label, tree.label
+('dp', 'dp', 'vp', 's')
+
 """
 
 # Originally based on: Natural Language Toolkit
@@ -42,28 +71,59 @@ class Tree(list):
 
         >>> from pygmars.tree import Tree
         >>> print(Tree(1, [2, Tree(3, [4]), 5]))
-        (1 2 (3 4) 5)
+        <BLANKLINE>
+          2
+        <BLANKLINE>
+            4)
+          5)
 
         >>> vp = Tree('VP', [Tree('V', ['saw']), Tree('NP', ['him'])])
         >>> s = Tree('S', [Tree('NP', ['I']), vp])
         >>> print(s)
-        (S (NP I) (VP (V saw) (NP him)))
+        (label='S', children=(
+          (label='NP', children=(
+            I)
+          (label='VP', children=(
+            (label='V', children=(
+              saw)
+            (label='NP', children=(
+              him)))
 
         >>> print(s[1])
-        (VP (V saw) (NP him))
+        (label='VP', children=(
+          (label='V', children=(
+            saw)
+          (label='NP', children=(
+            him))
 
         >>> print(s[1,1])
-        (NP him)
+        (label='NP', children=(
+          him)
 
         >>> t = Tree.from_string("(S (NP I) (VP (V saw) (NP him)))")
         >>> s == t
         True
         >>> print(t)
-        (S (NP I) (VP (V saw) (NP him)))
+        (label='S', children=(
+          (label='NP', children=(
+            I)
+          (label='VP', children=(
+            (label='V', children=(
+              saw)
+            (label='NP', children=(
+              him)))
 
         >>> t[0], t[1,1] = t[1,1], t[0]
         >>> print(t)
-        (S (NP him) (VP (V saw) (NP I)))
+        (label='S', children=(
+          (label='NP', children=(
+            him)
+          (label='VP', children=(
+            (label='V', children=(
+              saw)
+            (label='NP', children=(
+              I)))
+
 
     The length of a tree is the number of children it has.
 
@@ -282,7 +342,7 @@ class Tree(list):
         if len(s) > pos + 10:
             s = s[: pos + 10] + "..."
         if pos > 10:
-            s = "..." + s[pos - 10 :]
+            s = "..." + s[pos - 10:]
             offset = 13
         msg += '\n%s"%s"\n%s^' % (" " * 16, s, " " * (17 + offset))
         raise ValueError(msg)
@@ -293,90 +353,33 @@ class Tree(list):
     def __str__(self):
         return self.pformat()
 
-    def to_dict(self):
-        children = []
-
-        for child in self:
-            if not hasattr(child, 'to_dict'):
-                raise Exception(f'Invalid tree structure: {self}')
-            children.append(child.to_dict())
-
-        return {self.label: children}
-
     def pprint(self, **kwargs):
         """
         Print a string representation of this Tree
         """
         print(self.pformat(**kwargs))
 
-    def pformat(self, margin=90, indent=0):
+    def pformat(self, indent=0, *args, **kwargs):
         """
-        :return: A pretty-printed string representation of this tree.
+        :return: A pretty-printed string representation of this self.
         :rtype: str
-        :param margin: The right margin at which to do line-wrapping.
-        :type margin: int
         :param indent: The indentation level at which printing
             begins.  This number is used to decide how far to indent
             subsequent lines.
         :type indent: int
         """
-
-        # Try writing it on one line.
-        s = self._pformat_flat()
-        if len(s) + indent < margin:
-            return s
-
-        # If it doesn't fit on one line, then write it on multi-lines.
-        s = " " * indent + f"(label={self.label!r}, children=("
-
-        twodents = indent + 2
+        if isinstance(self.label, str):
+            s = f"(label={self.label!r}, children=("
+        else:
+            s = ""
 
         for child in self:
             if isinstance(child, Tree):
-                s += ("\n" + " " * twodents + child.pformat(margin, twodents))
-            elif isinstance(child, (tuple, list)):
-                s += "\n" + (" " * twodents) + ", ".join(repr(child))
-            else:
-                s += "\n" + (" " * twodents) + repr(child)
-        return s + "\n" + " " *indent + "))"
-
-    def _pformat_flat(self):
-        childstrs = []
-        for child in self:
-            if isinstance(child, Tree):
-                childstrs.append(child._pformat_flat())
+                s += ("\n" + " " * (indent + 2) + child.pformat(indent=indent + 2))
             elif isinstance(child, tuple):
-                childstrs.append("/".join(child))
+                s += "\n" + " " * (indent + 2) + "/".join(child)
             elif isinstance(child, str):
-                childstrs.append(child)
+                s += "\n" + " " * (indent + 2) + f"{child}"
             else:
-                childstrs.append(repr(child))
-
-        label = self.label
-        if not isinstance(label, str):
-            label = repr(label)
-
-        children = " ".join(childstrs)
-        return f"({label} {children})"
-
-"""
-Some trees to run tests on:
-
-    >>> from pygmars.tree import *
-    >>> dp1 = Tree('dp', [Tree('d', ['the']), Tree('np', ['dog'])])
-    >>> dp2 = Tree('dp', [Tree('d', ['the']), Tree('np', ['cat'])])
-    >>> vp = Tree('vp', [Tree('v', ['chased']), dp2])
-    >>> tree = Tree('s', [dp1, vp])
-    >>> print(tree)
-    (s (dp (d the) (np dog)) (vp (v chased) (dp (d the) (np cat))))
-
-The node label is accessed using the `label` attribute:
-
-    >>> dp1.label, dp2.label, vp.label, tree.label
-    ('dp', 'dp', 'vp', 's')
-
-    >>> print(tree[1,1,1,0])
-    cat
-
-"""
-
+                s += "\n" + " " * (indent + 2) + repr(child)
+        return f"{s})"

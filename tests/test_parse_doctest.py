@@ -39,7 +39,7 @@ Create a Rule and parse something:
     >>> parsed = rule.parse(tokens)
     >>> parsed.pprint(margin=100)
     (label='ROOT', children=(
-        (label='NP', children=(
+      (label='NP', children=(
         (label='DT', value='The')
         (label='NN', value='cat')
         (label='VBD', value='sat')
@@ -48,10 +48,7 @@ Create a Rule and parse something:
         (label='NN', value='mat')
         (label='DT', value='the')
         (label='NN', value='dog')
-        (label='VBD', value='chewed')
-      ))
-    ))
-
+        (label='VBD', value='chewed')))
 
 Printing Rule:
 
@@ -173,7 +170,7 @@ An exception is raise when parsing an empty tree:
     >>> parser.parse(Tree('S', []))
     Traceback (most recent call last):
       . . .
-    Exception: Warning: parsing empty tree: (S )
+    Exception: Warning: parsing empty tree: (label='S', children=())
 
 
 Parser
@@ -242,17 +239,24 @@ Parser
       after : ' <NP> {<V>  <PP>  <NP>}{<V>}'
     parse: parse_tree new len: 3
     parse tree: (label='ROOT', children=(
-      (NP (label='DT', value='The') (label='NN', value='cat'))
-        (label='VP', children=(
-        (V (label='VBD', value='sat'))
-            (label='PP', children=(
-          (P (label='IN', value='on'))
-          (NP (label='DT', value='the') (label='NN', value='mat'))
-        ))
-        (NP (label='DT', value='the') (label='NN', value='dog'))
-      ))
-      (VP (V (label='VBD', value='chewed')))
-    ))
+      (label='NP', children=(
+        (label='DT', value='The')
+        (label='NN', value='cat'))
+      (label='VP', children=(
+        (label='V', children=(
+          (label='VBD', value='sat'))
+        (label='PP', children=(
+          (label='P', children=(
+            (label='IN', value='on'))
+          (label='NP', children=(
+            (label='DT', value='the')
+            (label='NN', value='mat')))
+        (label='NP', children=(
+          (label='DT', value='the')
+          (label='NN', value='dog')))
+      (label='VP', children=(
+        (label='V', children=(
+          (label='VBD', value='chewed'))))
 
 
 Illegal patterns give an error message:

@@ -514,7 +514,7 @@ class Rule:
         higher will generate verbose tracing output.
         """
         if len(tree) == 0:
-            raise Exception(f"Warning: parsing empty tree: {tree!r}")
+            raise Exception(f"Warning: parsing empty tree: {tree!r})")
 
         # the initial tree may be a list and not yet a tree
         try:

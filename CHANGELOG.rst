@@ -9,10 +9,10 @@ Version 0.8.0
 
 - Improve error message and exception for faulty lexing regexes.
 
-- Add new to_dict() method on key objects
-
 - Adopt latest skeleton, including now using a venv/ directory =rather than tmp/
   to store the local virtualenv
+
+- Ensure the Tree.pformat() output has a correct children indentation
 
 
 Version 0.7.0

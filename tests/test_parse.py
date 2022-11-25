@@ -79,12 +79,11 @@ class TestRule(unittest.TestCase):
   (label='IN', value='by')
   (label='NP-TL', value='Fulton')
   (label='JJ-TL', value='Superior')
-    (label='GROUP', children=(
+  (label='GROUP', children=(
     (label='NN-TL', value='Court')
     (label='NN-TL', value='Judge')
     (label='NP', value='Durwood')
-    (label='NP', value='Pye')
-  ))
+    (label='NP', value='Pye'))
   (label='TO', value='to')
   (label='VB', value='investigate')
   (label='NNS', value='reports')
@@ -101,44 +100,12 @@ class TestRule(unittest.TestCase):
   (label='BEDZ', value='was')
   (label='VBN', value='won')
   (label='IN', value='by')
-    (label='GROUP', children=(
+  (label='GROUP', children=(
     (label='NN-TL', value='Mayor-nominate')
     (label='NP', value='Ivan')
     (label='NP', value='Allen')
-    (label='NP', value='Jr.')
-  ))
-  (label='DOT', value='.')
-))"""
-
-        """(ROOT
-  The/AT
-  September-October/NP
-  term/NN
-  jury/NN
-  had/HVD
-  been/BEN
-  charged/VBN
-  by/IN
-  Fulton/NP-TL
-  Superior/JJ-TL
-  (GROUP Court/NN-TL Judge/NN-TL Durwood/NP Pye/NP)
-  to/TO
-  investigate/VB
-  reports/NNS
-  of/IN
-  possible/JJ
-  ``/BACKTICK
-  irregularities/NNS
-  ''/QUOTE
-  in/IN
-  the/AT
-  hard-fought/JJ
-  primary/NN
-  which/WDT
-  was/BEDZ
-  won/VBN
-  by/IN
-  (GROUP Mayor-nominate/NN-TL Ivan/NP Allen/NP Jr./NP)
-  ./DOT)"""
+    (label='NP', value='Jr.'))
+  (label='DOT', value='.'))"""
+        
 
         assert tree.pformat() == expected
