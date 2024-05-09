@@ -8,7 +8,7 @@
 
 """
 
-This module defines ``Parser`` which is a regular expression-based parser to
+This module defines  ``Parser`` which is a regular expression-based parser to
 parse list of Tokens in a parse tree where each node has a label.
 
 This is originally based on NLTK POS chunk parsing used to identify non-
@@ -50,16 +50,12 @@ A ``pattern`` can update the grouping of tokens and trees by modifying a
 grouping encoded by a ``ParseString``.
 
 A ``pattern`` uses a modified version of regular expression patterns.  Patterns
-are used to match sequence of Token or Tree labels. 
-This string contains a sequence of angle-bracket delimited labels (e.g. the
-Token or Tree labels), with the grouping indicated by curly braces.
-Some examples of encoding label patterns are::
+are used to match sequence of Token or Tree labels. Examples of label patterns
+are::
 
-     (<DT>|<JJ>|<NN>)+
-     <NN>+
-     <NN.*>
-
-    {<DT><JJ><NN>} <VBN><IN> {<DT><NN>} {<DT><NN>} <VBD>
+     r'(<DT>|<JJ>|<NN>)+'
+     r'<NN>+'
+     r'<NN.*>'
 
 The differences between regular expression patterns and label patterns are:
 
@@ -161,14 +157,9 @@ class Parser:
 
         for i in range(self._loop):
             if trace:
-                print(f"parse: loop# {i}")
+                print(f'\nparse: loop# {i}')
             for parse_rule in self.rules:
-                if trace:
-                    print(f"parse: parse_rule: {parse_rule!r}")
-                    print(f"parse: parse_tree len: {len(tree)}")
                 tree = parse_rule.parse(tree=tree, trace=trace)
-                if trace:
-                    print(f"parse: parse_tree new len: {len(tree)}")
         return tree
 
     def __repr__(self):
@@ -205,10 +196,9 @@ class ParseString:
     parse Tree from the backing pieces.
 
     """
-
     # Anything that's not a delimiter such as <> or {}
     LABEL_CHARS = r"[^\{\}<>]"
-    LABEL = rf"(<{LABEL_CHARS}+>)"
+    LABEL = fr"(<{LABEL_CHARS}+>)"
 
     # return a True'ish value if the parse results look valid
     is_valid = re.compile(r"^(\{?%s\}?)*?$" % LABEL).match
@@ -276,7 +266,7 @@ class ParseString:
 
             # Find the list of tokens contained in this piece.
             length = piece.count("<")
-            subsequence = tree[index : index + length]
+            subsequence = tree[index:index + length]
 
             # Add this list of tokens to our tree.
             if matched:
@@ -392,7 +382,10 @@ def has_balanced_non_nested_curly_braces(string):
 # this should probably be made more strict than it is -- e.g., it
 # currently accepts 'foo'.
 is_label_pattern = re.compile(
-    r"^((%s|<%s>)*)$" % (r"([^{}<>]|{\d+,?}|{\d*,\d+})+", r"[^{}<>]+")
+    r"^((%s|<%s>)*)$" % (
+        r"([^{}<>]|{\d+,?}|{\d*,\d+})+",
+        r"[^{}<>]+"
+    )
 ).match
 
 remove_spaces = re.compile(r"\s").sub
@@ -434,7 +427,11 @@ def label_pattern_to_regex(label_pattern):
     should not contain nested or mismatched angle-brackets.
     """
     # Clean up the regular expression
-    label_pattern = remove_spaces("", label_pattern).replace("<", "(?:<(?:").replace(">", ")>)")
+    label_pattern = (
+        remove_spaces("", label_pattern)
+        .replace("<", "(?:<(?:")
+        .replace(">", ")>)")
+    )
 
     # Check the regular expression
     if not is_label_pattern(label_pattern):
@@ -473,7 +470,7 @@ class Rule:
         self._root_label = root_label
 
         regexp = label_pattern_to_regex(pattern)
-        regexp = rf"(?P<group>{regexp})"
+        regexp = fr"(?P<group>{regexp})"
         self._regexp = regexp
         # the replacement wraps matched tokens in curly braces
         self._repl = "{\\g<group>}"
@@ -503,12 +500,13 @@ class Rule:
         The set of nodes identified in the tree depends on the pattern of this
         ``Rule``.
 
-        ``trace`` is the level of tracing when parsing.  ``0`` will generate no
-        tracing output; ``1`` will generate normal tracing output; and ``2`` or
-        higher will generate verbose tracing output.
+        ``trace`` is the level of tracing when parsing.
+          - ``0`` will generdef parseate no tracing output.
+          - ``1`` will generate normal tracing output, listing only changes in the parse tree.
+          - ``2`` or higher will generate verbose tracing output.
         """
         if len(tree) == 0:
-            raise Exception(f"Warning: parsing empty tree: {tree!r})")
+            raise Exception(f"Warning: parsing empty tree: {tree!r}")
 
         # the initial tree may be a list and not yet a tree
         try:
@@ -520,31 +518,45 @@ class Rule:
 
         before_parse = str(parse_string)
         if trace:
-            print(f"Rule.parse transformer regex: {self._regexp}")
+            trace_elements = []
+            trace_elements_append = trace_elements.append
+            initial_tree_len = len(tree)
 
         parse_string.apply_transform(self._transformer)
         after_parse = str(parse_string)
         if after_parse != before_parse:
-            # only update the tree and the trace if there have been changes from
-            # this parse
+            # only update the tree and the trace if there have been changes from this parse
             if trace:
-                print()
-                print("# Input parsed as label:", repr(self.label))
+                updated = re.sub(r"\{[^\{]+\}", f" <{self.label}> ", after_parse)
+                trace_elements_append("-------------------------------------")
+                trace_elements_append(f'Rule.parse: applied rule: {self!r}')
+                trace_elements_append(f"  Rule regex: {self._regexp}")
+                trace_elements_append(f"  Input parsed to label: {self.label}")
+                trace_elements_append(f"    before  : {before_parse}")
+                trace_elements_append(f"    after   : {after_parse}")
+                trace_elements_append(f"    new     : {updated}")
                 if trace > 1:
                     # verbose
-                    print(tree.pformat())
-                    print("with pattern:", self.description, "(" + repr(self.pattern) + ")")
-
-                print("  before:", repr(before_parse))
-                print("  after :", repr(after_parse))
+                    trace_elements_append(". . . . . . . . .. ")
+                    trace_elements_append(tree.pformat())
+                    trace_elements_append(f"    with pattern: {self.description} ( {self.pattern!r} )")
 
             tree = parse_string.to_tree(self.label)
+            if trace:
+                new_tree_len = len(tree)
+                # only print if we have a change or if verbose
+                if (initial_tree_len - new_tree_len) or trace > 1:
+                    trace_elements_append(f"    length  : {initial_tree_len},{new_tree_len}")
+                    for te in trace_elements:
+                        print(te)
         return tree
 
     def __repr__(self):
         if self.description:
-            return f"<Rule: {self.pattern} / {self.label} # {self.description}>"
-        return f"<Rule: {self.pattern} / {self.label}>"
+            rep = f"<Rule: {self.pattern} / {self.label} # {self.description}>"
+        else:
+            rep = f"<Rule: {self.pattern} / {self.label}>"
+        return " ".join(rep.split())
 
     __str__ = __repr__
 
