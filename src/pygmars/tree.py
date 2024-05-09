@@ -69,66 +69,68 @@ class Tree(list):
     A tree's children are encoded as a list of leaves and subtrees, where a leaf
     is a basic (non-tree) value; and a subtree is a nested Tree.
 
-        >>> from pygmars.tree import Tree
-        >>> print(Tree(1, [2, Tree(3, [4]), 5]))
-        <BLANKLINE>
-          2
-        <BLANKLINE>
-            4)
-          5)
+    For example::
 
-        >>> vp = Tree('VP', [Tree('V', ['saw']), Tree('NP', ['him'])])
-        >>> s = Tree('S', [Tree('NP', ['I']), vp])
-        >>> print(s)
-        (label='S', children=(
-          (label='NP', children=(
-            I)
-          (label='VP', children=(
-            (label='V', children=(
-              saw)
-            (label='NP', children=(
-              him)))
+    >>> from pygmars.tree import Tree
+    >>> print(Tree(1, [2, Tree(3, [4]), 5]))
+    <BLANKLINE>
+      2
+    <BLANKLINE>
+        4)
+      5)
 
-        >>> print(s[1])
-        (label='VP', children=(
-          (label='V', children=(
-            saw)
-          (label='NP', children=(
-            him))
-
-        >>> print(s[1,1])
+    >>> vp = Tree('VP', [Tree('V', ['saw']), Tree('NP', ['him'])])
+    >>> s = Tree('S', [Tree('NP', ['I']), vp])
+    >>> print(s)
+    (label='S', children=(
+      (label='NP', children=(
+        I)
+      (label='VP', children=(
+        (label='V', children=(
+          saw)
         (label='NP', children=(
-          him)
+          him)))
 
-        >>> t = Tree.from_string("(S (NP I) (VP (V saw) (NP him)))")
-        >>> s == t
-        True
-        >>> print(t)
-        (label='S', children=(
-          (label='NP', children=(
-            I)
-          (label='VP', children=(
-            (label='V', children=(
-              saw)
-            (label='NP', children=(
-              him)))
+    >>> print(s[1])
+    (label='VP', children=(
+      (label='V', children=(
+        saw)
+      (label='NP', children=(
+        him))
 
-        >>> t[0], t[1,1] = t[1,1], t[0]
-        >>> print(t)
-        (label='S', children=(
-          (label='NP', children=(
-            him)
-          (label='VP', children=(
-            (label='V', children=(
-              saw)
-            (label='NP', children=(
-              I)))
+    >>> print(s[1,1])
+    (label='NP', children=(
+      him)
+
+    >>> t = Tree.from_string("(S (NP I) (VP (V saw) (NP him)))")
+    >>> s == t
+    True
+    >>> print(t)
+    (label='S', children=(
+      (label='NP', children=(
+        I)
+      (label='VP', children=(
+        (label='V', children=(
+          saw)
+        (label='NP', children=(
+          him)))
+
+    >>> t[0], t[1,1] = t[1,1], t[0]
+    >>> print(t)
+    (label='S', children=(
+      (label='NP', children=(
+        him)
+      (label='VP', children=(
+        (label='V', children=(
+          saw)
+        (label='NP', children=(
+          I)))
 
 
     The length of a tree is the number of children it has.
 
-        >>> len(t)
-        2
+    >>> len(t)
+    2
 
     The label attribute allow individual constituents to be labeled.  For
     example, syntax trees use this label to specify phrase tags, such as "NP"
@@ -188,11 +190,11 @@ class Tree(list):
 
     def leaves(self):
         """
-        Return the leaves of the tree without their labels
+        Return a list of leave nodes of this tree.
 
-            >>> t = Tree.from_string("(S (NP (D the) (N dog)) (VP (V chased) (NP (D the) (N cat))))")
-            >>> t.leaves()
-            ['the', 'dog', 'chased', 'the', 'cat']
+        >>> t = Tree.from_string("(S (NP (D the) (N dog)) (VP (V chased) (NP (D the) (N cat))))")
+        >>> t.leaves()
+        ['the', 'dog', 'chased', 'the', 'cat']
 
         :return: a list containing this tree's leaves.
             The order reflects the order of the
