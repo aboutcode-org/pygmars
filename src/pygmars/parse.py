@@ -501,7 +501,7 @@ class Rule:
         ``Rule``.
 
         ``trace`` is the level of tracing when parsing.
-          - ``0`` will generdef parseate no tracing output.
+          - ``0`` will generate no tracing output.
           - ``1`` will generate normal tracing output, listing only changes in the parse tree.
           - ``2`` or higher will generate verbose tracing output.
         """
