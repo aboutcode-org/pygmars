@@ -3,7 +3,7 @@
 # Copyright (C) nexB Inc. and others
 # Copyright (C) 2001-2020 NLTK Project
 # See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-# See https://github.com/nexB/pygmars for support or download.
+# See https://github.com/aboutcode-org/pygmars for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
 
@@ -168,7 +168,8 @@ class Tree(list):
                 return self[index[0]][index[1:]]
         else:
             raise TypeError(
-                "%s indices must be integers, not %s" % (type(self).__name__, type(index).__name__)
+                "%s indices must be integers, not %s" % (
+                    type(self).__name__, type(index).__name__)
             )
 
     def __setitem__(self, index, value):
@@ -176,14 +177,16 @@ class Tree(list):
             return list.__setitem__(self, index, value)
         elif isinstance(index, (list, tuple)):
             if len(index) == 0:
-                raise IndexError("The tree position () may not be " "assigned to.")
+                raise IndexError(
+                    "The tree position () may not be " "assigned to.")
             elif len(index) == 1:
                 self[index[0]] = value
             else:
                 self[index[0]][index[1:]] = value
         else:
             raise TypeError(
-                "%s indices must be integers, not %s" % (type(self).__name__, type(index).__name__)
+                "%s indices must be integers, not %s" % (
+                    type(self).__name__, type(index).__name__)
             )
 
     def leaves(self):
@@ -270,7 +273,8 @@ class Tree(list):
         if leaf_pattern is None:
             leaf_pattern = r"[^\s%s%s]+" % (open_pattern, close_pattern)
         token_re = re.compile(
-            r"%s\s*(%s)?|%s|(%s)" % (open_pattern, node_pattern, close_pattern, leaf_pattern)
+            r"%s\s*(%s)?|%s|(%s)" % (open_pattern,
+                                     node_pattern, close_pattern, leaf_pattern)
         )
         # Walk through each token, updating a stack of trees.
         stack = [(None, [])]  # list of (node, children) tuples
@@ -339,7 +343,7 @@ class Tree(list):
         if len(s) > pos + 10:
             s = s[: pos + 10] + "..."
         if pos > 10:
-            s = "..." + s[pos - 10 :]
+            s = "..." + s[pos - 10:]
             offset = 13
         msg += '\n%s"%s"\n%s^' % (" " * 16, s, " " * (17 + offset))
         raise ValueError(msg)
@@ -372,7 +376,8 @@ class Tree(list):
 
         for child in self:
             if isinstance(child, Tree):
-                s += "\n" + " " * (indent + 2) + child.pformat(indent=indent + 2)
+                s += "\n" + " " * (indent + 2) + \
+                    child.pformat(indent=indent + 2)
             elif isinstance(child, tuple):
                 s += "\n" + " " * (indent + 2) + "/".join(child)
             elif isinstance(child, str):

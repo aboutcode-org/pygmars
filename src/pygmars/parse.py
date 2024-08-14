@@ -2,7 +2,7 @@
 # Copyright (C) nexB Inc. and others
 # Copyright (C) 2001-2020 NLTK Project
 # See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-# See https://github.com/nexB/pygmars for support or download.
+# See https://github.com/aboutcode-org/pygmars for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
 
@@ -50,7 +50,7 @@ A ``pattern`` can update the grouping of tokens and trees by modifying a
 grouping encoded by a ``ParseString``.
 
 A ``pattern`` uses a modified version of regular expression patterns.  Patterns
-are used to match sequence of Token or Tree labels. 
+are used to match sequence of Token or Tree labels.
 This string contains a sequence of angle-bracket delimited labels (e.g. the
 Token or Tree labels), with the grouping indicated by curly braces.
 Some examples of encoding label patterns are::
@@ -140,7 +140,8 @@ class Parser:
         on rules and rule parse results.
         """
         self._grammar = grammar
-        self.rules = list(Rule.from_grammar(grammar, root_label, validate=validate))
+        self.rules = list(Rule.from_grammar(
+            grammar, root_label, validate=validate))
         self._root_label = root_label
         self._loop = loop
         self._trace = trace
@@ -238,7 +239,8 @@ class ParseString:
             raise ValueError(f"Invalid parse:\n  {s}")
 
         if not has_balanced_non_nested_curly_braces(s):
-            raise ValueError(f"Invalid parse: unbalanced or nested curly braces:\n  {s}")
+            raise ValueError(
+                f"Invalid parse: unbalanced or nested curly braces:\n  {s}")
 
         tags1 = tag_splitter(s)[1:-1]
         tags2 = [node.label for node in self._tree]
@@ -276,7 +278,7 @@ class ParseString:
 
             # Find the list of tokens contained in this piece.
             length = piece.count("<")
-            subsequence = tree[index : index + length]
+            subsequence = tree[index: index + length]
 
             # Add this list of tokens to our tree.
             if matched:
@@ -434,7 +436,8 @@ def label_pattern_to_regex(label_pattern):
     should not contain nested or mismatched angle-brackets.
     """
     # Clean up the regular expression
-    label_pattern = remove_spaces("", label_pattern).replace("<", "(?:<(?:").replace(">", ")>)")
+    label_pattern = remove_spaces("", label_pattern).replace(
+        "<", "(?:<(?:").replace(">", ")>)")
 
     # Check the regular expression
     if not is_label_pattern(label_pattern):
@@ -533,7 +536,8 @@ class Rule:
                 if trace > 1:
                     # verbose
                     print(tree.pformat())
-                    print("with pattern:", self.description, "(" + repr(self.pattern) + ")")
+                    print("with pattern:", self.description,
+                          "(" + repr(self.pattern) + ")")
 
                 print("  before:", repr(before_parse))
                 print("  after :", repr(after_parse))

@@ -2,7 +2,7 @@ Pygmars
 ========
 
 
-https://github.com/nexB/pygmars
+https://github.com/aboutcode-org/pygmars
 
 pygmars is a simple lexing and parsing library designed to craft lightweight
 lexers and parsers using regular expressions.
