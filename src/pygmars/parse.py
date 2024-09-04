@@ -162,7 +162,7 @@ class Parser:
 
         for i in range(self._loop):
             if trace:
-                print(f'\nparse: loop# {i}')
+                print(f"\nparse: loop# {i}")
             for parse_rule in self.rules:
                 tree = parse_rule.parse(tree=tree, trace=trace)
         return tree
@@ -201,9 +201,10 @@ class ParseString:
     parse Tree from the backing pieces.
 
     """
+
     # Anything that's not a delimiter such as <> or {}
     LABEL_CHARS = r"[^\{\}<>]"
-    LABEL = fr"(<{LABEL_CHARS}+>)"
+    LABEL = rf"(<{LABEL_CHARS}+>)"
 
     # return a True'ish value if the parse results look valid
     is_valid = re.compile(r"^(\{?%s\}?)*?$" % LABEL).match
@@ -271,7 +272,7 @@ class ParseString:
 
             # Find the list of tokens contained in this piece.
             length = piece.count("<")
-            subsequence = tree[index:index + length]
+            subsequence = tree[index : index + length]
 
             # Add this list of tokens to our tree.
             if matched:
@@ -387,10 +388,7 @@ def has_balanced_non_nested_curly_braces(string):
 # this should probably be made more strict than it is -- e.g., it
 # currently accepts 'foo'.
 is_label_pattern = re.compile(
-    r"^((%s|<%s>)*)$" % (
-        r"([^{}<>]|{\d+,?}|{\d*,\d+})+",
-        r"[^{}<>]+"
-    )
+    r"^((%s|<%s>)*)$" % (r"([^{}<>]|{\d+,?}|{\d*,\d+})+", r"[^{}<>]+")
 ).match
 
 remove_spaces = re.compile(r"\s").sub
@@ -432,11 +430,7 @@ def label_pattern_to_regex(label_pattern):
     should not contain nested or mismatched angle-brackets.
     """
     # Clean up the regular expression
-    label_pattern = (
-        remove_spaces("", label_pattern)
-        .replace("<", "(?:<(?:")
-        .replace(">", ")>)")
-    )
+    label_pattern = remove_spaces("", label_pattern).replace("<", "(?:<(?:").replace(">", ")>)")
 
     # Check the regular expression
     if not is_label_pattern(label_pattern):
@@ -475,7 +469,7 @@ class Rule:
         self._root_label = root_label
 
         regexp = label_pattern_to_regex(pattern)
-        regexp = fr"(?P<group>{regexp})"
+        regexp = rf"(?P<group>{regexp})"
         self._regexp = regexp
         # the replacement wraps matched tokens in curly braces
         self._repl = "{\\g<group>}"
@@ -533,7 +527,7 @@ class Rule:
             if trace:
                 updated = re.sub(r"\{[^\{]+\}", f" <{self.label}> ", after_parse)
                 trace_elements.append("-------------------------------------")
-                trace_elements.append(f'Rule.parse: applied rule: {self!r}')
+                trace_elements.append(f"Rule.parse: applied rule: {self!r}")
                 trace_elements.append(f"  Rule regex: {self._regexp}")
                 trace_elements.append(f"  Input parsed to label: {self.label}")
                 trace_elements.append(f"    before  : {before_parse}")
@@ -542,7 +536,9 @@ class Rule:
                 if trace > 1:
                     trace_elements.append(". . . . . . . . .. ")
                     trace_elements.append(tree.pformat())
-                    trace_elements.append(f"    with pattern: {self.description} ( {self.pattern!r} )")
+                    trace_elements.append(
+                        f"    with pattern: {self.description} ( {self.pattern!r} )"
+                    )
 
             tree = parse_string.to_tree(self.label)
 

@@ -21,17 +21,17 @@ Some example trees:
 (label='s', children=(
   (label='dp', children=(
     (label='d', children=(
-      the)
+      the))
     (label='np', children=(
-      dog))
+      dog))))
   (label='vp', children=(
     (label='v', children=(
-      chased)
+      chased))
     (label='dp', children=(
       (label='d', children=(
-        the)
+        the))
       (label='np', children=(
-        cat))))
+        cat))))))))
 
 The node label is accessed using the `label` attribute:
 >>> dp1.label, dp2.label, vp.label, tree.label
@@ -76,31 +76,31 @@ class Tree(list):
     <BLANKLINE>
       2
     <BLANKLINE>
-        4)
-      5)
+        4
+      5
 
     >>> vp = Tree('VP', [Tree('V', ['saw']), Tree('NP', ['him'])])
     >>> s = Tree('S', [Tree('NP', ['I']), vp])
     >>> print(s)
     (label='S', children=(
       (label='NP', children=(
-        I)
+        I))
       (label='VP', children=(
         (label='V', children=(
-          saw)
+          saw))
         (label='NP', children=(
-          him)))
+          him))))))
 
     >>> print(s[1])
     (label='VP', children=(
       (label='V', children=(
-        saw)
+        saw))
       (label='NP', children=(
-        him))
+        him))))
 
     >>> print(s[1,1])
     (label='NP', children=(
-      him)
+      him))
 
     >>> t = Tree.from_string("(S (NP I) (VP (V saw) (NP him)))")
     >>> s == t
@@ -108,23 +108,23 @@ class Tree(list):
     >>> print(t)
     (label='S', children=(
       (label='NP', children=(
-        I)
+        I))
       (label='VP', children=(
         (label='V', children=(
-          saw)
+          saw))
         (label='NP', children=(
-          him)))
+          him))))))
 
     >>> t[0], t[1,1] = t[1,1], t[0]
     >>> print(t)
     (label='S', children=(
       (label='NP', children=(
-        him)
+        him))
       (label='VP', children=(
         (label='V', children=(
-          saw)
+          saw))
         (label='NP', children=(
-          I)))
+          I))))))
 
 
     The length of a tree is the number of children it has.
@@ -170,8 +170,7 @@ class Tree(list):
                 return self[index[0]][index[1:]]
         else:
             raise TypeError(
-                "%s indices must be integers, not %s" % (
-                    type(self).__name__, type(index).__name__)
+                "%s indices must be integers, not %s" % (type(self).__name__, type(index).__name__)
             )
 
     def __setitem__(self, index, value):
@@ -179,16 +178,14 @@ class Tree(list):
             return list.__setitem__(self, index, value)
         elif isinstance(index, (list, tuple)):
             if len(index) == 0:
-                raise IndexError(
-                    "The tree position () may not be " "assigned to.")
+                raise IndexError("The tree position () may not be " "assigned to.")
             elif len(index) == 1:
                 self[index[0]] = value
             else:
                 self[index[0]][index[1:]] = value
         else:
             raise TypeError(
-                "%s indices must be integers, not %s" % (
-                    type(self).__name__, type(index).__name__)
+                "%s indices must be integers, not %s" % (type(self).__name__, type(index).__name__)
             )
 
     def leaves(self):
@@ -275,8 +272,7 @@ class Tree(list):
         if leaf_pattern is None:
             leaf_pattern = r"[^\s%s%s]+" % (open_pattern, close_pattern)
         token_re = re.compile(
-            r"%s\s*(%s)?|%s|(%s)" % (open_pattern,
-                                     node_pattern, close_pattern, leaf_pattern)
+            r"%s\s*(%s)?|%s|(%s)" % (open_pattern, node_pattern, close_pattern, leaf_pattern)
         )
         # Walk through each token, updating a stack of trees.
         stack = [(None, [])]  # list of (node, children) tuples
@@ -345,7 +341,7 @@ class Tree(list):
         if len(s) > pos + 10:
             s = s[: pos + 10] + "..."
         if pos > 10:
-            s = "..." + s[pos - 10:]
+            s = "..." + s[pos - 10 :]
             offset = 13
         msg += '\n%s"%s"\n%s^' % (" " * 16, s, " " * (17 + offset))
         raise ValueError(msg)
@@ -371,19 +367,20 @@ class Tree(list):
             subsequent lines.
         :type indent: int
         """
+        closings = 0
         if isinstance(self.label, str):
             s = f"(label={self.label!r}, children=("
+            closings = 2
         else:
             s = ""
 
         for child in self:
             if isinstance(child, Tree):
-                s += "\n" + " " * (indent + 2) + \
-                    child.pformat(indent=indent + 2)
+                s += "\n" + " " * (indent + 2) + child.pformat(indent=indent + 2)
             elif isinstance(child, tuple):
                 s += "\n" + " " * (indent + 2) + "/".join(child)
             elif isinstance(child, str):
                 s += "\n" + " " * (indent + 2) + f"{child}"
             else:
                 s += "\n" + " " * (indent + 2) + repr(child)
-        return f"{s})"
+        return f"{s}" + (")" * closings)
