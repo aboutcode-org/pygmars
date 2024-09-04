@@ -519,7 +519,6 @@ class Rule:
         before_parse = str(parse_string)
         if trace:
             trace_elements = []
-            trace_elements_append = trace_elements.append
             initial_tree_len = len(tree)
 
         parse_string.apply_transform(self._transformer)
@@ -528,27 +527,27 @@ class Rule:
             # only update the tree and the trace if there have been changes from this parse
             if trace:
                 updated = re.sub(r"\{[^\{]+\}", f" <{self.label}> ", after_parse)
-                trace_elements_append("-------------------------------------")
-                trace_elements_append(f'Rule.parse: applied rule: {self!r}')
-                trace_elements_append(f"  Rule regex: {self._regexp}")
-                trace_elements_append(f"  Input parsed to label: {self.label}")
-                trace_elements_append(f"    before  : {before_parse}")
-                trace_elements_append(f"    after   : {after_parse}")
-                trace_elements_append(f"    new     : {updated}")
+                trace_elements.append("-------------------------------------")
+                trace_elements.append(f'Rule.parse: applied rule: {self!r}')
+                trace_elements.append(f"  Rule regex: {self._regexp}")
+                trace_elements.append(f"  Input parsed to label: {self.label}")
+                trace_elements.append(f"    before  : {before_parse}")
+                trace_elements.append(f"    after   : {after_parse}")
+                trace_elements.append(f"    new     : {updated}")
                 if trace > 1:
-                    # verbose
-                    trace_elements_append(". . . . . . . . .. ")
-                    trace_elements_append(tree.pformat())
-                    trace_elements_append(f"    with pattern: {self.description} ( {self.pattern!r} )")
+                    trace_elements.append(". . . . . . . . .. ")
+                    trace_elements.append(tree.pformat())
+                    trace_elements.append(f"    with pattern: {self.description} ( {self.pattern!r} )")
 
             tree = parse_string.to_tree(self.label)
+
             if trace:
                 new_tree_len = len(tree)
                 # only print if we have a change or if verbose
-                if (initial_tree_len - new_tree_len) or trace > 1:
-                    trace_elements_append(f"    length  : {initial_tree_len},{new_tree_len}")
-                    for te in trace_elements:
-                        print(te)
+                trace_elements.append(f"    length  : {initial_tree_len},{new_tree_len}")
+                for te in trace_elements:
+                    print(te)
+
         return tree
 
     def __repr__(self):
