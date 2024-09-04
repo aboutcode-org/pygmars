@@ -4,6 +4,13 @@ Changelog
 
 
 
+Version 0.8.1
+-------------
+
+- Update link references of ownership from nexB to aboutcode-org
+
+
+
 Version 0.8.0
 -----------------
 

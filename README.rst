@@ -2,7 +2,7 @@ Pygmars
 ========
 
 
-https://github.com/nexB/pygmars
+https://github.com/aboutcode-org/pygmars
 
 pygmars is a simple lexing and parsing library designed to craft lightweight
 lexers and parsers using regular expressions.
@@ -13,7 +13,7 @@ to obtain a parse tree.
 
 The lexing task transforms a sequence of words or strings (e.g. already split
 in words) in a sequence of Token objects, assigning a label to each word and
-tracking their position and line number. 
+tracking their position and line number.
 
 In particular, the lexing output is designed to be compatible with the output
 of Pygments lexers. It becomes possible to build simple grammars on top of

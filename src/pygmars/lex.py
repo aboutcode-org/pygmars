@@ -2,7 +2,7 @@
 # Copyright (C) nexB Inc. and others
 # Copyright (C) 2001-2020 NLTK Project
 # See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-# See https://github.com/nexB/pygmars for support or download.
+# See https://github.com/aboutcode-org/pygmars for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
 
@@ -113,7 +113,8 @@ class Lexer:
                 )
 
         except (Exception, FutureWarning) as e:
-            raise InvalidLexerMatcher(f"Invalid Lexer matcher: {m!r}, label: {label}") from e
+            raise InvalidLexerMatcher(
+                f"Invalid Lexer matcher: {m!r}, label: {label}") from e
 
     def tokenize(self, string, splitter=str.split):
         """

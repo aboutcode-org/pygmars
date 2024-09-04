@@ -1,14 +1,15 @@
+# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) nexB Inc. and others
 # Copyright (C) 2001-2020 NLTK Project
 # See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-# See https://github.com/nexB/pygmars for support or download.
+# See https://github.com/aboutcode-org/pygmars for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
 
 """
 
-This module defines  ``Parser`` which is a regular expression-based parser to
+This module defines ``Parser`` which is a regular expression-based parser to
 parse list of Tokens in a parse tree where each node has a label.
 
 This is originally based on NLTK POS chunk parsing used to identify non-
@@ -50,12 +51,16 @@ A ``pattern`` can update the grouping of tokens and trees by modifying a
 grouping encoded by a ``ParseString``.
 
 A ``pattern`` uses a modified version of regular expression patterns.  Patterns
-are used to match sequence of Token or Tree labels. Examples of label patterns
-are::
+are used to match sequence of Token or Tree labels.
+This string contains a sequence of angle-bracket delimited labels (e.g. the
+Token or Tree labels), with the grouping indicated by curly braces.
+Some examples of encoding label patterns are::
 
-     r'(<DT>|<JJ>|<NN>)+'
-     r'<NN>+'
-     r'<NN.*>'
+     (<DT>|<JJ>|<NN>)+
+     <NN>+
+     <NN.*>
+
+    {<DT><JJ><NN>} <VBN><IN> {<DT><NN>} {<DT><NN>} <VBD>
 
 The differences between regular expression patterns and label patterns are:
 

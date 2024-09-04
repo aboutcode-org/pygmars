@@ -4,7 +4,7 @@
 @rem Copyright (c) nexB Inc. and others. All rights reserved.
 @rem SPDX-License-Identifier: Apache-2.0
 @rem See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-@rem See https://github.com/nexB/ for support or download.
+@rem See https://github.com/aboutcode-org/ for support or download.
 @rem See https://aboutcode.org for more information about nexB OSS projects.
 
 
@@ -34,7 +34,7 @@ set "DOCS_REQUIREMENTS=--editable .[docs] --constraint requirements.txt"
 set "VIRTUALENV_DIR=venv"
 
 @rem # Cleanable files and directories to delete with the --clean option
-set "CLEANABLE=build venv"
+set "CLEANABLE=build dist venv .cache .eggs"
 
 @rem # extra  arguments passed to pip
 set "PIP_EXTRA_ARGS= "
