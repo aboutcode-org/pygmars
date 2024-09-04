@@ -113,8 +113,7 @@ class Lexer:
                 )
 
         except (Exception, FutureWarning) as e:
-            raise InvalidLexerMatcher(
-                f"Invalid Lexer matcher: {m!r}, label: {label}") from e
+            raise InvalidLexerMatcher(f"Invalid Lexer matcher: {m!r}, label: {label}") from e
 
     def tokenize(self, string, splitter=str.split):
         """

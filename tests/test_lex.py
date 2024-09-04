@@ -14,8 +14,8 @@
 
 import unittest
 
-from pygmars.lex import Lexer
 from pygmars.lex import InvalidLexerMatcher
+from pygmars.lex import Lexer
 
 
 class TestLexer(unittest.TestCase):

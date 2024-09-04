@@ -82,7 +82,7 @@ class TestRule(unittest.TestCase):
     (label='NN-TL', value='Court')
     (label='NN-TL', value='Judge')
     (label='NP', value='Durwood')
-    (label='NP', value='Pye'))
+    (label='NP', value='Pye')))
   (label='TO', value='to')
   (label='VB', value='investigate')
   (label='NNS', value='reports')
@@ -103,7 +103,7 @@ class TestRule(unittest.TestCase):
     (label='NN-TL', value='Mayor-nominate')
     (label='NP', value='Ivan')
     (label='NP', value='Allen')
-    (label='NP', value='Jr.'))
-  (label='DOT', value='.'))"""
+    (label='NP', value='Jr.')))
+  (label='DOT', value='.')))"""
 
         assert tree.pformat() == expected

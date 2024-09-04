@@ -3,12 +3,17 @@ Changelog
 ================
 
 
+Version 0.9.0
+-------------
+
+- Drop support for Python 3.8, add Python 3.12
+- Improve debug tracing
+
 
 Version 0.8.1
 -------------
 
 - Update link references of ownership from nexB to aboutcode-org
-
 
 
 Version 0.8.0
