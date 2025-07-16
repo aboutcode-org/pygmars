@@ -245,12 +245,11 @@ Style Conventions for the Documentaion
 
 6. Spelling
 
-    You should check for spelling errors before you push changes. `Aspell <http://aspell.net/>`_
+    You should check for spelling errors before you push changes. ``Aspell``
     is a GNU project Command Line tool you can use for this purpose. Download and install Aspell,
     then execute ``aspell check <file-name>`` for all the files changed. Be careful about not
     changing commands or other stuff as Aspell gives prompts for a lot of them. Also delete the
-    temporary ``.bak`` files generated. Refer the `manual <http://aspell.net/man-html/>`_ for more
-    information on how to use.
+    temporary ``.bak`` files generated.
 
 7. Notes and Warning Snippets
 
