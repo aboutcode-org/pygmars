@@ -10,7 +10,7 @@
 #
 # Natural Language Toolkit (NLTK)
 # URL: <http://nltk.org/>
-"""
+r"""
 ==========
  Parsing
 ==========

@@ -178,7 +178,7 @@ class Tree(list):
             return list.__setitem__(self, index, value)
         elif isinstance(index, (list, tuple)):
             if len(index) == 0:
-                raise IndexError("The tree position () may not be " "assigned to.")
+                raise IndexError("The tree position () may not be assigned to.")
             elif len(index) == 1:
                 self[index[0]] = value
             else:

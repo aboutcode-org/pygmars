@@ -7,7 +7,7 @@
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
 
-"""
+r"""
 
 This module defines ``Parser`` which is a regular expression-based parser to
 parse list of Tokens in a parse tree where each node has a label.
@@ -269,7 +269,6 @@ class ParseString:
         # ['ads',     '<for>', '',        '<bar>',  '']
         #  not match, match,   not match, match,    match
         for piece in pieces_splitter(self._parse_string):
-
             # Find the list of tokens contained in this piece.
             length = piece.count("<")
             subsequence = tree[index : index + length]
