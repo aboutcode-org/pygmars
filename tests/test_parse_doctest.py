@@ -82,18 +82,6 @@ Other values generate an error:
         ...
     AttributeError: 'str' object has no attribute 'label'
 
-The `str()` for a parse string adds spaces to it, which makes it line
-up with `str()` output for other parse strings over the same
-underlying input.
-
-    >>> cs = ParseString(t1)
-    >>> print(cs)
-     <T0>  <T1>  <T2>  <T3>  <T4>  <T5>  <T6>  <T7>  <T8>  <T9>
-    >>> cs.apply_transform(partial(re.compile('<T3>').sub, '{<T3>}'))
-    '<T0><T1><T2>{<T3>}<T4><T5><T6><T7><T8><T9>'
-    >>> print(cs)
-     <T0>  <T1>  <T2> {<T3>} <T4>  <T5>  <T6>  <T7>  <T8>  <T9>
-
 The `validate()` method makes sure that the parsing does not corrupt
 the parse string.  By setting validate=True, `validate()` will be
 called at the end of every call to `apply_transform`.
@@ -203,41 +191,41 @@ Parser
     Rule.parse: applied rule: <Rule: <DT>? <JJ>* <NN>* / NP # NP>
       Rule regex: (?P<group>(?:<(?:DT)>)?(?:<(?:JJ)>)*(?:<(?:NN)>)*)
       Input parsed to label: NP
-        before  :  <DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>
-        after   : {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>
-        new     :  <NP>  <VBD>  <IN>  <NP>  <NP>  <VBD>
+        before  : <DT><NN><VBD><IN><DT><NN><DT><NN><VBD>
+        after   : {<DT><NN>}<VBD><IN>{<DT><NN>}{<DT><NN>}<VBD>
+        new     : <NP><VBD><IN><NP><NP><VBD>
         length  : 9,6
     -------------------------------------
     Rule.parse: applied rule: <Rule: <IN> / P # Preposition>
       Rule regex: (?P<group>(?:<(?:IN)>))
       Input parsed to label: P
-        before  :  <NP>  <VBD>  <IN>  <NP>  <NP>  <VBD>
-        after   :  <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>
-        new     :  <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>
+        before  : <NP><VBD><IN><NP><NP><VBD>
+        after   : <NP><VBD>{<IN>}<NP><NP><VBD>
+        new     : <NP><VBD><P><NP><NP><VBD>
         length  : 6,6
     -------------------------------------
     Rule.parse: applied rule: <Rule: <V.*> / V # Verb>
       Rule regex: (?P<group>(?:<(?:V[^\{\}<>]*)>))
       Input parsed to label: V
-        before  :  <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>
-        after   :  <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
-        new     :  <NP>  <V>  <P>  <NP>  <NP>  <V> 
+        before  : <NP><VBD><P><NP><NP><VBD>
+        after   : <NP>{<VBD>}<P><NP><NP>{<VBD>}
+        new     : <NP><V><P><NP><NP><V>
         length  : 6,6
     -------------------------------------
     Rule.parse: applied rule: <Rule: <P> <NP> / PP # PP -> P NP>
       Rule regex: (?P<group>(?:<(?:P)>)(?:<(?:NP)>))
       Input parsed to label: PP
-        before  :  <NP>  <V>  <P>  <NP>  <NP>  <V>
-        after   :  <NP>  <V> {<P>  <NP>} <NP>  <V>
-        new     :  <NP>  <V>  <PP>  <NP>  <V>
+        before  : <NP><V><P><NP><NP><V>
+        after   : <NP><V>{<P><NP>}<NP><V>
+        new     : <NP><V><PP><NP><V>
         length  : 6,5
     -------------------------------------
     Rule.parse: applied rule: <Rule: <V> <NP|PP>* / VP # VP -> V (NP|PP)*>
       Rule regex: (?P<group>(?:<(?:V)>)(?:<(?:NP|PP)>)*)
       Input parsed to label: VP
-        before  :  <NP>  <V>  <PP>  <NP>  <V>
-        after   :  <NP> {<V>  <PP>  <NP>}{<V>}
-        new     :  <NP>  <VP>  <VP> 
+        before  : <NP><V><PP><NP><V>
+        after   : <NP>{<V><PP><NP>}{<V>}
+        new     : <NP><VP><VP>
         length  : 5,3
     parse tree: (label='ROOT', children=(
       (label='NP', children=(

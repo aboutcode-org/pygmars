@@ -319,18 +319,7 @@ class ParseString:
         return f"<ParseString: {self._parse_string!r}>"
 
     def __str__(self):
-        """
-        Return a formatted representation of this ``ParseString``. This
-        representation includes extra spaces to ensure that labels will line up
-        with the representation of other ``ParseString`` for the same text,
-        regardless of the grouping.
-        """
-        # Add spaces to make everything line up.
-        s = re.sub(r">(?!\})", r"> ", self._parse_string)
-        s = re.sub(r"([^\{])<", r"\1 <", s)
-        if s[0] == "<":
-            s = " " + s
-        return s.rstrip()
+        return self._parse_string.rstrip()
 
 
 # used to split a ParseString on labels and braces delimiters
@@ -525,7 +514,7 @@ class Rule:
         if after_parse != before_parse:
             # only update the tree and the trace if there have been changes from this parse
             if trace:
-                updated = re.sub(r"\{[^\{]+\}", f" <{self.label}> ", after_parse)
+                updated = re.sub(r"\{[^\{]+\}", f"<{self.label}>", after_parse)
                 trace_elements.append("-------------------------------------")
                 trace_elements.append(f"Rule.parse: applied rule: {self!r}")
                 trace_elements.append(f"  Rule regex: {self._regexp}")

@@ -2,6 +2,12 @@
 Changelog
 ================
 
+Version 1.0.0
+-------------
+
+- Remove formatting from ``ParseString.__str__``, as this is not needed in
+  scancode-toolkit and is a performance issue
+
 
 Version 0.9.0
 -------------
