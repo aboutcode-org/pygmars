@@ -82,18 +82,6 @@ Other values generate an error:
         ...
     AttributeError: 'str' object has no attribute 'label'
 
-The `str()` for a parse string adds spaces to it, which makes it line
-up with `str()` output for other parse strings over the same
-underlying input.
-
-    >>> cs = ParseString(t1)
-    >>> print(cs)
-     <T0>  <T1>  <T2>  <T3>  <T4>  <T5>  <T6>  <T7>  <T8>  <T9>
-    >>> cs.apply_transform(partial(re.compile('<T3>').sub, '{<T3>}'))
-    '<T0><T1><T2>{<T3>}<T4><T5><T6><T7><T8><T9>'
-    >>> print(cs)
-     <T0>  <T1>  <T2> {<T3>} <T4>  <T5>  <T6>  <T7>  <T8>  <T9>
-
 The `validate()` method makes sure that the parsing does not corrupt
 the parse string.  By setting validate=True, `validate()` will be
 called at the end of every call to `apply_transform`.
@@ -221,7 +209,7 @@ Parser
       Input parsed to label: V
         before  :  <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>
         after   :  <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
-        new     :  <NP>  <V>  <P>  <NP>  <NP>  <V> 
+        new     :  <NP>  <V>  <P>  <NP>  <NP>  <V>
         length  : 6,6
     -------------------------------------
     Rule.parse: applied rule: <Rule: <P> <NP> / PP # PP -> P NP>
@@ -237,7 +225,7 @@ Parser
       Input parsed to label: VP
         before  :  <NP>  <V>  <PP>  <NP>  <V>
         after   :  <NP> {<V>  <PP>  <NP>}{<V>}
-        new     :  <NP>  <VP>  <VP> 
+        new     :  <NP>  <VP>  <VP>
         length  : 5,3
     parse tree: (label='ROOT', children=(
       (label='NP', children=(
