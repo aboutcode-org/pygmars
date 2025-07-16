@@ -514,7 +514,7 @@ class Rule:
         if after_parse != before_parse:
             # only update the tree and the trace if there have been changes from this parse
             if trace:
-                updated = re.sub(r"\{[^\{]+\}", f" <{self.label}> ", after_parse)
+                updated = re.sub(r"\{[^\{]+\}", f"<{self.label}>", after_parse)
                 trace_elements.append("-------------------------------------")
                 trace_elements.append(f"Rule.parse: applied rule: {self!r}")
                 trace_elements.append(f"  Rule regex: {self._regexp}")
