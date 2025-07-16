@@ -10,7 +10,7 @@
 #
 # Natural Language Toolkit (NLTK)
 # URL: <http://nltk.org/>
-"""
+r"""
 ==========
  Parsing
 ==========
@@ -29,7 +29,7 @@
     >>> tag_pattern = "<DT>?<JJ>*<NN.*>"
     >>> regexp_pattern = label_pattern_to_regex(tag_pattern)
     >>> regexp_pattern
-    '(?:<(?:DT)>)?(?:<(?:JJ)>)*(?:<(?:NN[^\\\\{\\\\}<>]*)>)'
+    '(?:<(?:DT)>)?(?:<(?:JJ)>)*(?:<(?:NN[^\\{\\}<>]*)>)'
 
 Create a Rule and parse something:
 
