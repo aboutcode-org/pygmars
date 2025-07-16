@@ -191,41 +191,41 @@ Parser
     Rule.parse: applied rule: <Rule: <DT>? <JJ>* <NN>* / NP # NP>
       Rule regex: (?P<group>(?:<(?:DT)>)?(?:<(?:JJ)>)*(?:<(?:NN)>)*)
       Input parsed to label: NP
-        before  :  <DT>  <NN>  <VBD>  <IN>  <DT>  <NN>  <DT>  <NN>  <VBD>
-        after   : {<DT>  <NN>} <VBD>  <IN> {<DT>  <NN>}{<DT>  <NN>} <VBD>
-        new     :  <NP>  <VBD>  <IN>  <NP>  <NP>  <VBD>
+        before  : <DT><NN><VBD><IN><DT><NN><DT><NN><VBD>
+        after   : {<DT><NN>}<VBD><IN>{<DT><NN>}{<DT><NN>}<VBD>
+        new     :  <NP> <VBD><IN> <NP>  <NP> <VBD>
         length  : 9,6
     -------------------------------------
     Rule.parse: applied rule: <Rule: <IN> / P # Preposition>
       Rule regex: (?P<group>(?:<(?:IN)>))
       Input parsed to label: P
-        before  :  <NP>  <VBD>  <IN>  <NP>  <NP>  <VBD>
-        after   :  <NP>  <VBD> {<IN>} <NP>  <NP>  <VBD>
-        new     :  <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>
+        before  : <NP><VBD><IN><NP><NP><VBD>
+        after   : <NP><VBD>{<IN>}<NP><NP><VBD>
+        new     : <NP><VBD> <P> <NP><NP><VBD>
         length  : 6,6
     -------------------------------------
     Rule.parse: applied rule: <Rule: <V.*> / V # Verb>
       Rule regex: (?P<group>(?:<(?:V[^\{\}<>]*)>))
       Input parsed to label: V
-        before  :  <NP>  <VBD>  <P>  <NP>  <NP>  <VBD>
-        after   :  <NP> {<VBD>} <P>  <NP>  <NP> {<VBD>}
-        new     :  <NP>  <V>  <P>  <NP>  <NP>  <V>
+        before  : <NP><VBD><P><NP><NP><VBD>
+        after   : <NP>{<VBD>}<P><NP><NP>{<VBD>}
+        new     : <NP> <V> <P><NP><NP> <V>
         length  : 6,6
     -------------------------------------
     Rule.parse: applied rule: <Rule: <P> <NP> / PP # PP -> P NP>
       Rule regex: (?P<group>(?:<(?:P)>)(?:<(?:NP)>))
       Input parsed to label: PP
-        before  :  <NP>  <V>  <P>  <NP>  <NP>  <V>
-        after   :  <NP>  <V> {<P>  <NP>} <NP>  <V>
-        new     :  <NP>  <V>  <PP>  <NP>  <V>
+        before  : <NP><V><P><NP><NP><V>
+        after   : <NP><V>{<P><NP>}<NP><V>
+        new     : <NP><V> <PP> <NP><V>
         length  : 6,5
     -------------------------------------
     Rule.parse: applied rule: <Rule: <V> <NP|PP>* / VP # VP -> V (NP|PP)*>
       Rule regex: (?P<group>(?:<(?:V)>)(?:<(?:NP|PP)>)*)
       Input parsed to label: VP
-        before  :  <NP>  <V>  <PP>  <NP>  <V>
-        after   :  <NP> {<V>  <PP>  <NP>}{<V>}
-        new     :  <NP>  <VP>  <VP>
+        before  : <NP><V><PP><NP><V>
+        after   : <NP>{<V><PP><NP>}{<V>}
+        new     : <NP> <VP>  <VP>
         length  : 5,3
     parse tree: (label='ROOT', children=(
       (label='NP', children=(
